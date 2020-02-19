@@ -20,11 +20,11 @@
 
 The dataset used in these examples are pulled from StatsBomb's open datasets. As you can see I had trouble understanding the location information contained in their json event datasets. I found them counterintutive to how I typically view locations. I think I understand now, and appreciate their (assumed) reasoning behind it, but you'll see I play around with placement on the pitch.
 
-[Github statsbomb](https://github.com/statsbomb/open-data)
-[StatsBomb Signup](https://statsbomb.com/resource-centre/)
-[StatsBomb R package](http://statsbomb.com/wp-content/uploads/2019/07/Using-StatsBomb-Data-In-R_up.pdf) <- one of the required packages is no longer in the R repository? The presentation is helpful to see how some analysis can be done.
-[StatsBomb Messi](https://statsbomb.com/2019/07/messi-data-release-part-1-working-with-statsbomb-data-in-r/)
-[StatsBomb in Use](https://statsbomb.com/2019/05/statsbomb-data-one-year-on/)
+- [Github statsbomb](https://github.com/statsbomb/open-data)
+- [StatsBomb Signup](https://statsbomb.com/resource-centre/)
+- [StatsBomb R package](http://statsbomb.com/wp-content/uploads/2019/07/Using-StatsBomb-Data-In-R_up.pdf) <- one of the required packages is no longer in the R repository? The presentation is helpful to see how some analysis can be done.
+- [StatsBomb Messi](https://statsbomb.com/2019/07/messi-data-release-part-1-working-with-statsbomb-data-in-r/)
+- [StatsBomb in Use](https://statsbomb.com/2019/05/statsbomb-data-one-year-on/)
 
 ## Python
 
