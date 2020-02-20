@@ -15,6 +15,7 @@
  *Optional libraries:*
  
  1. Seaborn
+ 2. Networkx
  
 ## Dataset
 
