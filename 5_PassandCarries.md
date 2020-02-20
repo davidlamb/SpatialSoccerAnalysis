@@ -39,7 +39,7 @@ I'll use the same match of Reading vs West Ham. I'll focus only on Reading WFC f
 ssa = SpatialSoccer()
 pth_to_matches = "open-data-master/data/matches/37/42.json"
 gdf = ssa.load_single_match(pth_to_matches)
-pitchgdf = SpatialSoccer.build_polygon_pitch_statbomb()
+pitchgdf = SpatialSoccer.build_polygon_pitch_statsbomb()
 pitchgdf.plot(facecolor = SpatialSoccer.GREEN_PITCH_COLOR,edgecolor=SpatialSoccer.WHITE_LINE_COLOR);
 passes = gdf.loc[(gdf['event_type']=='Pass') & (gdf['team_name']=='Reading WFC')].copy()
 passes.head()
@@ -1074,6 +1074,569 @@ s_join.loc[s_join['player_name']=='Kristine Leine'].groupby(['player_name','reci
     Name: cell, dtype: int64
 
 
+
+## Pass Networks
+
+These tables are really networks and connections on which player tends to pass to which other player. Python includes a simple library to build a graph and study the network for us.
+
+I'll look at the original passing informaiton from the first period by Reading. First I need to add the player name, pass recipient name, and then I'll group by each.
+
+Passes go in different directions, so I will create a directed graph and weight the edges by the count.
+
+
+```python
+p1_rp['player_name'] = p1_rp['player'].apply(lambda x: x.get('name'))
+p1_rp['position_name'] = p1_rp['position'].apply(lambda x: x.get('name'))
+p1_rp['position_id'] = p1_rp['position'].apply(lambda x: x.get('id'))
+p1_rp['recipient'] = None
+p1_rp['recipient'] = p1_rp['pass'].apply(lambda x: x.get('recipient'))
+p1_rp['recipient_name']= p1_rp['recipient'].apply(lambda x: x.get('name') if x else None)
+#p1_rp = passes.loc[(passes['pattern_name']=='Regular Play')& (gdf['period']==1)].copy()
+pass_counts = p1_rp.groupby(['player_name','recipient_name'])['id'].count().reset_index()
+pass_counts.head(10)
+```
+
+
+
+
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>player_name</th>
+      <th>recipient_name</th>
+      <th>id</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>Amalie Vevle Eikeland</td>
+      <td>Brooke Chaplen</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>Amalie Vevle Eikeland</td>
+      <td>Fara Williams</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>Amalie Vevle Eikeland</td>
+      <td>Kristine Leine</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>Amalie Vevle Eikeland</td>
+      <td>Remi Allen</td>
+      <td>2</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>Angharad James</td>
+      <td>Brooke Chaplen</td>
+      <td>2</td>
+    </tr>
+    <tr>
+      <th>5</th>
+      <td>Angharad James</td>
+      <td>Fara Williams</td>
+      <td>2</td>
+    </tr>
+    <tr>
+      <th>6</th>
+      <td>Angharad James</td>
+      <td>Kristine Leine</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>7</th>
+      <td>Angharad James</td>
+      <td>Natasha Harding</td>
+      <td>3</td>
+    </tr>
+    <tr>
+      <th>8</th>
+      <td>Angharad James</td>
+      <td>Rachael Laws</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>9</th>
+      <td>Angharad James</td>
+      <td>Remi Allen</td>
+      <td>2</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+
+
+
+```python
+import networkx as nx
+G = nx.DiGraph()
+```
+
+
+```python
+edges = [(row['player_name'],row['recipient_name'],row['id']) for i,row in pass_counts.iterrows()]
+G.add_weighted_edges_from(edges)
+```
+
+
+```python
+list(G.neighbors('Remi Allen'))
+```
+
+
+
+
+    ['Angharad James',
+     'Brooke Chaplen',
+     'Fara Williams',
+     'Jade Moore',
+     'Josanne Potter',
+     'Kristine Leine',
+     'Rachael Laws']
+
+
+
+Here we might be interested in defining the rolls individual players have based on their position in the network. In other words, how central is a player in the network?
+
+There are different statistics for this to calculate. For example the eigenvector centrality identifies the most central nodes in the graphs. This seems to largely be reflective of the number of passes each player was involved in, since that is the weight applied to the edges. So, Leine and Potter have the highest number.
+
+
+```python
+nx.eigenvector_centrality(G,weight='weight')
+```
+
+
+
+
+    {'Amalie Vevle Eikeland': 0.1722049661594191,
+     'Brooke Chaplen': 0.2775671166482669,
+     'Fara Williams': 0.3928632811941752,
+     'Kristine Leine': 0.4897630291802286,
+     'Remi Allen': 0.33970701174601525,
+     'Angharad James': 0.20203141287435167,
+     'Natasha Harding': 0.17368919186107207,
+     'Rachael Laws': 0.3038811555365381,
+     'Jade Moore': 0.1872511015208038,
+     'Josanne Potter': 0.4169461298174418,
+     'Rachel Rowe': 0.10703399018848275}
+
+
+
+When we don't consider the weight, Remi Allen is the most central player. Which I find interesting given her position in the database is Right-Center Midfield. I suspect she ranks high in centrality because nearly every player passed to her at least once, and she passed to nearly every player at least once.
+
+
+```python
+nx.eigenvector_centrality(G)
+```
+
+
+
+
+    {'Amalie Vevle Eikeland': 0.26829970467896425,
+     'Brooke Chaplen': 0.39882189788658096,
+     'Fara Williams': 0.35994907914434165,
+     'Kristine Leine': 0.38214875803969534,
+     'Remi Allen': 0.4190166573045631,
+     'Angharad James': 0.2900030133022893,
+     'Natasha Harding': 0.10771929477075143,
+     'Rachael Laws': 0.23809910836771378,
+     'Jade Moore': 0.2539270145396967,
+     'Josanne Potter': 0.2868143750070017,
+     'Rachel Rowe': 0.13653789316149167}
+
+
+
+
+```python
+pass_counts.loc[(pass_counts['player_name']=='Remi Allen') | (pass_counts['recipient_name']=='Remi Allen')]
+```
+
+
+
+
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>player_name</th>
+      <th>recipient_name</th>
+      <th>id</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>3</th>
+      <td>Amalie Vevle Eikeland</td>
+      <td>Remi Allen</td>
+      <td>2</td>
+    </tr>
+    <tr>
+      <th>9</th>
+      <td>Angharad James</td>
+      <td>Remi Allen</td>
+      <td>2</td>
+    </tr>
+    <tr>
+      <th>12</th>
+      <td>Brooke Chaplen</td>
+      <td>Remi Allen</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>20</th>
+      <td>Fara Williams</td>
+      <td>Remi Allen</td>
+      <td>2</td>
+    </tr>
+    <tr>
+      <th>27</th>
+      <td>Jade Moore</td>
+      <td>Remi Allen</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>35</th>
+      <td>Josanne Potter</td>
+      <td>Remi Allen</td>
+      <td>2</td>
+    </tr>
+    <tr>
+      <th>43</th>
+      <td>Kristine Leine</td>
+      <td>Remi Allen</td>
+      <td>3</td>
+    </tr>
+    <tr>
+      <th>54</th>
+      <td>Rachael Laws</td>
+      <td>Remi Allen</td>
+      <td>2</td>
+    </tr>
+    <tr>
+      <th>59</th>
+      <td>Rachel Rowe</td>
+      <td>Remi Allen</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>60</th>
+      <td>Remi Allen</td>
+      <td>Angharad James</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>61</th>
+      <td>Remi Allen</td>
+      <td>Brooke Chaplen</td>
+      <td>2</td>
+    </tr>
+    <tr>
+      <th>62</th>
+      <td>Remi Allen</td>
+      <td>Fara Williams</td>
+      <td>3</td>
+    </tr>
+    <tr>
+      <th>63</th>
+      <td>Remi Allen</td>
+      <td>Jade Moore</td>
+      <td>4</td>
+    </tr>
+    <tr>
+      <th>64</th>
+      <td>Remi Allen</td>
+      <td>Josanne Potter</td>
+      <td>3</td>
+    </tr>
+    <tr>
+      <th>65</th>
+      <td>Remi Allen</td>
+      <td>Kristine Leine</td>
+      <td>4</td>
+    </tr>
+    <tr>
+      <th>66</th>
+      <td>Remi Allen</td>
+      <td>Rachael Laws</td>
+      <td>1</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+
+
+
+Betweeness centrality looks for the bridge that connects all the other players. Jade Moore in this game was the most central figure with a betweeness centrality of .19. Second was Kristine Leine. This seems to suggest that these players were often the bridge between. They were always along the shortest path between all the other players. Passing and recieving the ground plays. The plot of her average position and passes in the field show she occupies about where you would expect a midfielder to be.
+
+
+
+
+```python
+nx.betweenness_centrality(G,weight='weight')
+```
+
+
+
+
+    {'Amalie Vevle Eikeland': 0.051481481481481475,
+     'Brooke Chaplen': 0.065,
+     'Fara Williams': 0.035925925925925924,
+     'Kristine Leine': 0.15296296296296297,
+     'Remi Allen': 0.07407407407407407,
+     'Angharad James': 0.1374074074074074,
+     'Natasha Harding': 0.0,
+     'Rachael Laws': 0.11092592592592593,
+     'Jade Moore': 0.19333333333333333,
+     'Josanne Potter': 0.0,
+     'Rachel Rowe': 0.07611111111111112}
+
+
+
+
+```python
+grouped_moore = s_join.loc[s_join['player_name']=='Jade Moore'].groupby("cell").agg({'id':'size',
+                                                                                     'angle':'mean',
+                                                                                     'length':'mean'}).rename(columns={'id':'count',
+                                                                                                                       'angle':'avg_angle',
+                                                                                                                       'length':'avg_length'}).reset_index()
+gridpasscount = grid.merge(grouped_moore, how='left',on='cell')
+gridpasscount['count'].fillna(0,inplace=True)
+gridpasscount['grid_x'] = gridpasscount['centroid'].apply(lambda p: p.x)
+gridpasscount['grid_y'] = gridpasscount['centroid'].apply(lambda p: p.y)
+gridpasscount['x_direct']= gridpasscount[['avg_angle','avg_length']].apply(lambda a: np.cos(np.radians(a[0]))*a[1],axis=1)
+gridpasscount['y_direct'] = gridpasscount[['avg_angle','avg_length']].apply(lambda a: np.sin(np.radians(a[0]))*a[1],axis=1)
+ax = gridpasscount.plot(column="count",cmap='OrRd');
+ax.quiver(gridpasscount['grid_x'].values,gridpasscount['grid_y'].values,
+          gridpasscount['x_direct'].values,gridpasscount['y_direct'].values);
+```
+
+
+![png](images/5/output_61_0.png)
+
+
+However, she did not receive a lot of passes, or send a lot of passes to other players. Or at least no more than Josanne Potter did, and she had a smaller betweeness centrality score...I admit I'm not entirely clear on why she came up so high.
+
+
+```python
+pass_counts.loc[(pass_counts['player_name']=='Jade Moore') | (pass_counts['recipient_name']=='Jade Moore')]
+```
+
+
+
+
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>player_name</th>
+      <th>recipient_name</th>
+      <th>id</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>16</th>
+      <td>Fara Williams</td>
+      <td>Jade Moore</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>21</th>
+      <td>Jade Moore</td>
+      <td>Amalie Vevle Eikeland</td>
+      <td>2</td>
+    </tr>
+    <tr>
+      <th>22</th>
+      <td>Jade Moore</td>
+      <td>Angharad James</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>23</th>
+      <td>Jade Moore</td>
+      <td>Fara Williams</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>24</th>
+      <td>Jade Moore</td>
+      <td>Josanne Potter</td>
+      <td>2</td>
+    </tr>
+    <tr>
+      <th>25</th>
+      <td>Jade Moore</td>
+      <td>Kristine Leine</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>26</th>
+      <td>Jade Moore</td>
+      <td>Rachel Rowe</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>27</th>
+      <td>Jade Moore</td>
+      <td>Remi Allen</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>32</th>
+      <td>Josanne Potter</td>
+      <td>Jade Moore</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>39</th>
+      <td>Kristine Leine</td>
+      <td>Jade Moore</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>57</th>
+      <td>Rachel Rowe</td>
+      <td>Jade Moore</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>63</th>
+      <td>Remi Allen</td>
+      <td>Jade Moore</td>
+      <td>4</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+
+
+We can plot out the network as a visualization too. I'll use the position of the player as a guide as to where to place them on the pitch, even if they didn't exactly occupy that space during the game.
+
+
+```python
+player_positions = p1_rp.groupby(['player_name','position_id'])['id'].count().reset_index()
+player_positions = {row['player_name']:SpatialSoccer.POSITION_LOCATION[row['position_id']] for i,row in player_positions.iterrows()}
+player_positions
+```
+
+
+
+
+    {'Amalie Vevle Eikeland': (100, 60),
+     'Angharad James': (60, 60),
+     'Brooke Chaplen': (100, 28),
+     'Fara Williams': (80, 44),
+     'Jade Moore': (40, 44),
+     'Josanne Potter': (20, 28),
+     'Kristine Leine': (20, 60),
+     'Natasha Harding': (20, 14),
+     'Rachael Laws': (10, 40),
+     'Rachel Rowe': (20, 76),
+     'Remi Allen': (60, 28)}
+
+
+
+Rather than use the edges in the graph, I'll just build a list with the fixed position of each player. I want to scale the edge widths by the maximum connection between players.
+
+
+```python
+edges_nodes = [(row['player_name'],row['recipient_name'],row['id'],player_positions[row['player_name']],
+                player_positions[row['recipient_name']]) for i,row in pass_counts.iterrows()]
+max_edge = max([x[2] for x in edges_nodes])
+edges_nodes[:5]
+```
+
+
+
+
+    [('Amalie Vevle Eikeland', 'Brooke Chaplen', 1, (100, 60), (100, 28)),
+     ('Amalie Vevle Eikeland', 'Fara Williams', 1, (100, 60), (80, 44)),
+     ('Amalie Vevle Eikeland', 'Kristine Leine', 1, (100, 60), (20, 60)),
+     ('Amalie Vevle Eikeland', 'Remi Allen', 2, (100, 60), (60, 28)),
+     ('Angharad James', 'Brooke Chaplen', 2, (60, 60), (100, 28))]
+
+
+
+
+```python
+from matplotlib.path import Path
+import matplotlib.patches as patches
+ax = pitchgdf.plot(facecolor = SpatialSoccer.GREEN_PITCH_COLOR,edgecolor=SpatialSoccer.WHITE_LINE_COLOR);
+for k,v in player_positions.items():
+    ax.plot([v[0]], [v[1]], marker='o', markersize=10, color="red")
+    ax.text(v[0], v[1], k, color='white', size=8, ha='center')
+
+maxLineWidth=3
+codes = [Path.MOVETO, Path.LINETO]
+
+for e in edges_nodes:
+    path = Path([e[3],e[4]], codes)
+    lw = maxLineWidth*(e[2]/max_edge)
+    patch = patches.PathPatch(path, facecolor='none', lw=lw,edgecolor='white',alpha=((e[2]/max_edge)+.1))
+    ax.add_patch(patch)
+```
+
+
+![png](images/5/output_68_0.png)
+
+
+This produces some interesting results. There were strong connections between the Goalkeeper and Leine and Potter (as we figured above). Strong connectsion between Potter and Leine, and Potter and Williams. Finally, Moore and Allen had a couple of passes to eachother.
+
+Another approach would be to see if we could use the player's average pass location instead of their fixed location based on StatsBomb's position information.
 
 
 ```python
