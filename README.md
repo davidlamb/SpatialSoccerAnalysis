@@ -3,6 +3,23 @@
  
  These examples are provided as is with miminal support, although feedback and comments are welcome. These are basic examples and don't break down the match events in every possible way. They are meant to be a stepping stone to deeper analysis.
  
+[Project 1](1_BuildPitch.md)
+  - In this project I look at creating the pitch based on the coordinates provided in StatsBomb's documentation. This creates the first geopandas dataframe. I also begin to look at how to interpret location and the problems I encountered from a cartesian coordinate \ geographic perspective. This does not mean problems with the data itself.
+  
+[Project 2](2_ParsingJSON.md)
+  - This project builds of the first project and introduces the ssalib.py file. I look at parsing the data and building basic dataframes from the JSON. THis includes building some GeoDataFrames to plot on the pitch. Really just starting to get comfortable with the event data.
+  
+[Project 3](3_ProcessingTimeAttributes.md)
+  - One of my goals is to explore building spatial trajectories from the events. To do this I want to have a datetime object to work with. From that I can query based on time, or calculate timedeltas more easily. Or at least in a way I understand to calculate them. This looks at building time objects within the GeoDataFrame and some basic queries based on time. These become integrated in the SpatialSoccer class in ssalib.py.
+  
+[Project 4](4_BuildingTriangles.md)
+  - This branches off a bit from trajectories to look at Delaunay Triangulation (something I have used a lot in space-time analysis) and voronoi diagrams. This was more of an experimental project. The ideas were pulled from David Sumpter's soccermatics book. As are some of the other project ideas.
+  
+[Project 5](5_PassandCarries.md)
+  - This is the first look at "trajectories" in a sense, but without the time associated with them. Again some of the ideas are pulled from Soccermatics, looking at average pass lengths and average pass directions. This adds a grid overlay or fishnet to the SpatialSoccer class for processing averages over the pitch. I also look at some social network analysis applied to pass connections.
+  
+Project 6
+ - Full look at developing trajectories from the StatsBomb data. Not yet uploaded.
 
 ## Libraries
  *Required external libraries:*
@@ -15,6 +32,7 @@
  *Optional libraries:*
  
  1. Seaborn
+ 2. Networkx
  
 ## Dataset
 
