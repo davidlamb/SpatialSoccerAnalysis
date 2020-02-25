@@ -51,3 +51,8 @@ The SpatialSoccer class in ssalib.py contains some scripts I preserved to make i
 ## Help
 
 If you can, it would be helpful to find a video of the match you are interested in. These don't seem to be readily available, but it could really improve interpretation.
+
+## Other libraries
+Some other libraries that I've found:
+Soccermatics by JoGall is an R library. It also includes the tromso dataset. [https://github.com/JoGall/soccermatics](https://github.com/JoGall/soccermatics)
+Barron83's fork of soccermatics seems to have more functions.[https://github.com/barron83/soccermatics](https://github.com/barron83/soccermatics)
