@@ -20,6 +20,10 @@
   
 [Project 6 Draft](6_UnderstandExploringPossession.md)
  - I guess all of these should really be considered drafts. With this one I am still working through some of it, but thought I would upload it. In this document, I am looking to understand StatsBomb's possession variable. I also develop the convex hull of player possession similar to what is briefly described in Soccermatics.
+## Location
+
+Took a little deeper look at [location](_LocationDepth.md) and what is needed to situation with an origin I am more familiar with. As you can tell from some of the projects above, this is an area that I struggled to understand what exactly the locations meant.
+
 
 ## Libraries
  *Required external libraries:*
