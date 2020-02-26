@@ -15,6 +15,19 @@ class SpatialSoccer(object):
     WHITE_LINE_COLOR = "#ffffff"
     ELEVEN_COLORS = ["#808080","#C71585","#FFA07A","#5F9EA0","#6A5ACD","#708090",
                     "#FDF5E6","#228B22","#8B4513","#FFFF00","#000000"]
+    POSITION_NUMBER = {1:'Goalkeeper',2:'Right Back',3:'Right Center Back',4:'Center Back',
+                    5:'Left Center Back',6:'Left Back',7:'Right Wing Back',8:'Left Wing Back',
+                    9:'Right Defensive Midfield',10:'Center Defensive Midfield',11:'Left Defensive Midfield',
+                    12:'Right Midfield',13:'Right Center Midfield',14:'Center Midfield',15:'Left Center Midfield',
+                    16:'Left Midfield',17:'Right Wing',18:'Right Attacking Midfield',19:'Center Attacking Midfield',
+                    20:'Left Attacking Midfield',21:'Left Wing',22:'Right Center Forward',23:'Striker',
+                    24:'Left Center Forward',25:'Secondary Striker'}
+    POSITION_LOCATION = {1:(10,40),2:(20,14),3:(20,28),4:(20,44),
+                        5:(20,60),6:(20,76),7:(40,14),8:(40,76),
+                        9:(40,28),10:(40,44),11:(40,60),12:(60,14),
+                        13:(60,28),14:(60,44),15:(60,60),16:(60,76),
+                        17:(80,14),18:(80,28),19:(80,44),20:(80,60),
+                        21:(80,76),22:(100,28),23:(100,44),24:(100,60),25:(90,44)}
     def __init__(self):
         self.parse_time = True
         self.add_type = True
@@ -46,7 +59,7 @@ class SpatialSoccer(object):
         """
         # TODO: Add exception handling.
 
-        with open(path_to_matches, "r") as read_file:
+        with open(path_to_matches, "r",encoding='utf-8') as read_file:
             self.matches = json.load(read_file)
         
         if matchid:
@@ -63,7 +76,7 @@ class SpatialSoccer(object):
         match_start_time = self.current_match['kick_off']
         self.current_match_datetime_str = "{0} {1}".format(match_day,match_start_time)
         self.current_match_datetime_dt = parse(self.current_match_datetime_str)
-        with open(self.path_to_current_match_events, "r") as read_file:
+        with open(self.path_to_current_match_events, "r",encoding='utf-8') as read_file:
             self.events = json.load(read_file)
         if self.events:
             self.current_match_events_df = pd.DataFrame(self.events)
