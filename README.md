@@ -18,8 +18,8 @@
 [Project 5](5_PassandCarries.md)
   - This is the first look at "trajectories" in a sense, but without the time associated with them. Again some of the ideas are pulled from Soccermatics, looking at average pass lengths and average pass directions. This adds a grid overlay or fishnet to the SpatialSoccer class for processing averages over the pitch. I also look at some social network analysis applied to pass connections.
   
-Project 6
- - Full look at developing trajectories from the StatsBomb data. Not yet uploaded.
+[Project 6 Draft](6_UnderstandExploringPossession.md)
+ - I guess all of these should really be considered drafts. With this one I am still working through some of it, but thought I would upload it. In this document, I am looking to understand StatsBomb's possession variable. I also develop the convex hull of player possession similar to what is briefly described in Soccermatics.
 
 ## Libraries
  *Required external libraries:*
