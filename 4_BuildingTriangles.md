@@ -77,6 +77,8 @@ pitchgdf.plot(facecolor = SpatialSoccer.GREEN_PITCH_COLOR,edgecolor=SpatialSocce
 
 To load all the events from a single match we start with the matches json file. This is provided to the load_single_match function. You have two options, provide the id for the match using the matchid property, or use an index set as matchindex. The default is to use the first match (matchindex = 0)
 
+If you receive an error then you might need to update your version of numpy. This one is using at least 1.18.
+
 
 ```python
 pth_to_matches = "open-data-master/data/matches/37/42.json"
@@ -483,7 +485,26 @@ SpatialSoccer.flip_coordinates(wh['y_coord'].values.astype(np.float64))
 
 
 
-Not particularly interesting in this dataset since the events are all single discrete events. But I think we can descern a little bit what happened here. West ham had the ball and then Reading broke away here to score. The actual goal was scored on based on a free kick.
+Not particularly interesting in this dataset since the events are all single discrete events. But I think we can descern a little bit what happened here. West ham had the ball and then Reading broke away here to score. 
+
+To ensure we accupy total space of the field with the triangles, we can trick the algorithm by placing the corners of the field with the dataset.
+
+
+```python
+points = np.append(reading_first_goal[['x_coord','y_coord']].values,[[0,0],[120,0],[120,80],[0,80]],axis=0)
+tri = Delaunay(points)
+index_list = []
+tri_geom = []
+for i,t in enumerate(points[tri.simplices]):
+    tri_geom.append(Polygon(t))
+    index_list.append(i)
+tri_gdf = gpd.GeoDataFrame({"order":index_list},geometry=tri_geom)
+tri_gdf.plot();
+```
+
+
+![png](images/4/output_28_0.png)
+
 
 ## Voronoi Tesselation
 
@@ -984,7 +1005,7 @@ ff_gdf.loc[ff_gdf['player_name']=='Jade Moore'].plot(ax=ax,marker="x",markersize
 ```
 
 
-![png](images/4/output_33_0.png)
+![png](images/4/output_35_0.png)
 
 
 
@@ -1006,7 +1027,7 @@ vor_gdf.plot();
 ```
 
 
-![png](images/4/output_36_0.png)
+![png](images/4/output_38_0.png)
 
 
 
@@ -1022,7 +1043,63 @@ for i,row in ff_gdf.loc[ff_gdf['teammate']==False].iterrows():
 ```
 
 
-![png](images/4/output_37_0.png)
+![png](images/4/output_39_0.png)
+
+
+This visual isn't very nice. It appears incomplete. So as a workaround, I append the corners of the pitch to the points dataset and recreate the vorornoi tesselation. This too does not look correct. The edges extend well beyond the edge of the pitch (not into infinity this time).
+
+
+```python
+points = np.append(ff_gdf.loc[ff_gdf['teammate']==True][['x_coord','y_coord']].values,[[0,0],[120,0],[120,80],[0,80]],axis=0)
+vor = Voronoi(points)
+lines = [LineString(vor.vertices[line]) for line in vor.ridge_vertices if -1 not in line]
+index_list = [i for i in range(0,len(lines))]
+vor_gdf = gpd.GeoDataFrame({"order":index_list},geometry=lines)
+vor_gdf.plot();
+```
+
+
+![png](images/4/output_41_0.png)
+
+
+You can see the problem more clearly when I plot it on the background image.
+
+
+```python
+ax = pitchgdf.plot(facecolor = SpatialSoccer.GREEN_PITCH_COLOR,edgecolor=SpatialSoccer.WHITE_LINE_COLOR);
+
+ff_gdf.plot(ax=ax,column='teammate',legend=True)
+ff_gdf.loc[ff_gdf['player_name']=='Jade Moore'].plot(ax=ax,marker="x",markersize=50)
+vor_gdf.plot(ax=ax,linewidth=2,color='red')
+for i,row in ff_gdf.loc[ff_gdf['teammate']==False].iterrows():
+    ax.text(x =row['x_coord'],y =row['y_coord'],s =row['position_name'][-1],fontsize=10);
+```
+
+
+![png](images/4/output_43_0.png)
+
+
+We can take the outside edge of the pitch as a polygon and clip the voronoi polygons to that edge. This produces a little cleaner looking tesselation for reviewing the position of the players.
+
+
+```python
+p = pitchgdf.iloc[0]['geometry']
+vor_gdf['clipped'] = vor_gdf['geometry'].apply(lambda x: p.intersection(x))
+vor_gdf=vor_gdf.set_geometry(vor_gdf['clipped'])
+
+
+ax = pitchgdf.plot(facecolor = SpatialSoccer.GREEN_PITCH_COLOR,edgecolor=SpatialSoccer.WHITE_LINE_COLOR);
+ax.set_xlim([90,120])
+ax.set_ylim([20,60])
+ff_gdf.plot(ax=ax,column='teammate',legend=True)
+ff_gdf.loc[ff_gdf['player_name']=='Jade Moore'].plot(ax=ax,marker="x",markersize=50)
+vor_gdf.plot(ax=ax,linewidth=2,color='red')
+for i,row in ff_gdf.loc[ff_gdf['teammate']==False].iterrows():
+    ax.text(x =row['x_coord'],y =row['y_coord'],s =row['position_name'],fontsize=10);
+```
+
+
+![png](images/4/output_45_0.png)
 
 
 Above we can see, I think at least, the west ham players are leaving a lot of gaps. Two fall on or nearly on the vornoi region edge (red line) a bad position to be in. The keeper seems off where they should be too. Maybe she even had her view blocked by one of the defenders. I could not find a video that highlighted the goal, so I'm just guessing.
@@ -1237,7 +1314,7 @@ passes.plot(ax=ax);
 ```
 
 
-![png](images/4/output_43_0.png)
+![png](images/4/output_51_0.png)
 
 
 ### Player Name
@@ -1483,8 +1560,6 @@ passes.dtypes
     geometry                 geometry
     total_seconds             float64
     player_name                object
-    y_coord2                  float64
-    x_coord2                  float64
     dtype: object
 
 
@@ -1590,7 +1665,7 @@ leg.set_bbox_to_anchor((1, 1))
 ```
 
 
-![png](images/4/output_51_0.png)
+![png](images/4/output_59_0.png)
 
 
 
@@ -1604,18 +1679,24 @@ leg.set_bbox_to_anchor((1, 1))
 ```
 
 
-![png](images/4/output_52_0.png)
+![png](images/4/output_60_0.png)
 
 
 Finally the coordinates for the averate location are passed to the Voronoi scipy class and then converted to lines. This gives us a sense of where on average each player was for their originating pass. I plot the points a little differently so I can make sure I have 11 distinct colors. Even then they get a little hard to tell them apart. A bigger marker, or marker type may help.
 
 
 ```python
-points = average_position_gdf[['x_coord2','y_coord2']].values
+points = np.append(average_position_gdf[['x_coord2','y_coord2']].values,[[0,0],[120,0],[120,80],[0,80]],axis=0)
 vor = Voronoi(points)
 lines = [LineString(vor.vertices[line]) for line in vor.ridge_vertices if -1 not in line]
 index_list = [i for i in range(0,len(lines))]
 vor_gdf = gpd.GeoDataFrame({"order":index_list},geometry=lines)
+
+p = pitchgdf.iloc[0]['geometry']
+vor_gdf['clipped'] = vor_gdf['geometry'].apply(lambda x: p.intersection(x))
+vor_gdf=vor_gdf.set_geometry(vor_gdf['clipped'])
+
+
 ax = pitchgdf.plot(facecolor = SpatialSoccer.GREEN_PITCH_COLOR,edgecolor=SpatialSoccer.WHITE_LINE_COLOR);
 ax.set_xlim([-5,125])
 ax.set_ylim([-5,85])
@@ -1630,7 +1711,7 @@ vor_gdf.plot(ax=ax,linewidth=2,color='red');
 ```
 
 
-![png](images/4/output_54_0.png)
+![png](images/4/output_62_0.png)
 
 
 When we have more points to work with, our tesselation looks a little better.
@@ -1661,11 +1742,22 @@ passes['x_coord2'] = SpatialSoccer.flip_coordinates(passes['x_coord'].values.ast
 average_position = passes.groupby('position_name').mean()[['x_coord2','y_coord2']].reset_index()
 average_position_gdf = gpd.GeoDataFrame(average_position,
                                         geometry=[Point((x[0],x[1])) for x in average_position[['x_coord2','y_coord2']].values])
-points = average_position_gdf[['x_coord2','y_coord2']].values
+
+
+
+points = np.append(average_position_gdf[['x_coord2','y_coord2']].values,[[0,0],[120,0],[120,80],[0,80]],axis=0)
 vor = Voronoi(points)
 lines = [LineString(vor.vertices[line]) for line in vor.ridge_vertices if -1 not in line]
 index_list = [i for i in range(0,len(lines))]
 vor_gdf = gpd.GeoDataFrame({"order":index_list},geometry=lines)
+
+
+
+p = pitchgdf.iloc[0]['geometry']
+vor_gdf['clipped'] = vor_gdf['geometry'].apply(lambda x: p.intersection(x))
+vor_gdf=vor_gdf.set_geometry(vor_gdf['clipped'])
+
+
 ax = pitchgdf.plot(facecolor = SpatialSoccer.GREEN_PITCH_COLOR,edgecolor=SpatialSoccer.WHITE_LINE_COLOR);
 ax.set_xlim([-5,125])
 ax.set_ylim([-5,85])
@@ -1681,7 +1773,7 @@ vor_gdf.plot(ax=ax,linewidth=2,color='red');
 ```
 
 
-![png](images/4/output_56_0.png)
+![png](images/4/output_64_0.png)
 
 
 
