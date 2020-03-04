@@ -303,8 +303,6 @@ gdf[gdf['goal']==1]
       <th>possession_team</th>
       <th>play_pattern</th>
       <th>...</th>
-      <th>off_camera</th>
-      <th>event_time</th>
       <th>goal</th>
       <th>event_type</th>
       <th>x_coord</th>
@@ -313,6 +311,8 @@ gdf[gdf['goal']==1]
       <th>geometry</th>
       <th>p_team_name</th>
       <th>diff_name</th>
+      <th>pattern_name</th>
+      <th>player_name</th>
     </tr>
   </thead>
   <tbody>
@@ -329,8 +329,6 @@ gdf[gdf['goal']==1]
       <td>{'id': 974, 'name': 'Reading WFC'}</td>
       <td>{'id': 3, 'name': 'From Free Kick'}</td>
       <td>...</td>
-      <td>NaN</td>
-      <td>2020-02-12 20:53:02.903000064</td>
       <td>1</td>
       <td>Shot</td>
       <td>109.3</td>
@@ -339,6 +337,8 @@ gdf[gdf['goal']==1]
       <td>POINT (109.30000 37.80000)</td>
       <td>Reading WFC</td>
       <td>0</td>
+      <td>From Free Kick</td>
+      <td>Jade Moore</td>
     </tr>
     <tr>
       <th>1968</th>
@@ -353,8 +353,6 @@ gdf[gdf['goal']==1]
       <td>{'id': 974, 'name': 'Reading WFC'}</td>
       <td>{'id': 6, 'name': 'From Counter'}</td>
       <td>...</td>
-      <td>NaN</td>
-      <td>2020-02-12 21:48:33.139000064</td>
       <td>1</td>
       <td>Shot</td>
       <td>102.3</td>
@@ -363,10 +361,12 @@ gdf[gdf['goal']==1]
       <td>POINT (102.30000 41.80000)</td>
       <td>Reading WFC</td>
       <td>0</td>
+      <td>From Counter</td>
+      <td>Brooke Chaplen</td>
     </tr>
   </tbody>
 </table>
-<p>2 rows × 49 columns</p>
+<p>2 rows × 51 columns</p>
 </div>
 
 
@@ -816,8 +816,6 @@ gdf.groupby('possession').tail(1)
       <th>possession_team</th>
       <th>play_pattern</th>
       <th>...</th>
-      <th>off_camera</th>
-      <th>event_time</th>
       <th>goal</th>
       <th>event_type</th>
       <th>x_coord</th>
@@ -826,6 +824,8 @@ gdf.groupby('possession').tail(1)
       <th>geometry</th>
       <th>p_team_name</th>
       <th>diff_name</th>
+      <th>pattern_name</th>
+      <th>player_name</th>
     </tr>
   </thead>
   <tbody>
@@ -842,8 +842,6 @@ gdf.groupby('possession').tail(1)
       <td>{'id': 974, 'name': 'Reading WFC'}</td>
       <td>{'id': 1, 'name': 'Regular Play'}</td>
       <td>...</td>
-      <td>NaN</td>
-      <td>2020-02-12 20:30:00.000000000</td>
       <td>0</td>
       <td>Half Start</td>
       <td>None</td>
@@ -852,6 +850,8 @@ gdf.groupby('possession').tail(1)
       <td>None</td>
       <td>Reading WFC</td>
       <td>0</td>
+      <td>Regular Play</td>
+      <td>None</td>
     </tr>
     <tr>
       <th>25</th>
@@ -866,8 +866,6 @@ gdf.groupby('possession').tail(1)
       <td>{'id': 974, 'name': 'Reading WFC'}</td>
       <td>{'id': 9, 'name': 'From Kick Off'}</td>
       <td>...</td>
-      <td>NaN</td>
-      <td>2020-02-12 20:30:15.561999872</td>
       <td>0</td>
       <td>Ball Receipt*</td>
       <td>108.1</td>
@@ -876,6 +874,8 @@ gdf.groupby('possession').tail(1)
       <td>POINT (108.10000 10.00000)</td>
       <td>Reading WFC</td>
       <td>0</td>
+      <td>From Kick Off</td>
+      <td>Natasha Harding</td>
     </tr>
     <tr>
       <th>31</th>
@@ -890,8 +890,6 @@ gdf.groupby('possession').tail(1)
       <td>{'id': 972, 'name': 'West Ham United LFC'}</td>
       <td>{'id': 3, 'name': 'From Free Kick'}</td>
       <td>...</td>
-      <td>NaN</td>
-      <td>2020-02-12 20:30:33.215000064</td>
       <td>0</td>
       <td>Interception</td>
       <td>82.2</td>
@@ -900,6 +898,8 @@ gdf.groupby('possession').tail(1)
       <td>POINT (82.20000 65.30000)</td>
       <td>West Ham United LFC</td>
       <td>1</td>
+      <td>From Free Kick</td>
+      <td>Remi Allen</td>
     </tr>
     <tr>
       <th>45</th>
@@ -914,8 +914,6 @@ gdf.groupby('possession').tail(1)
       <td>{'id': 972, 'name': 'West Ham United LFC'}</td>
       <td>{'id': 4, 'name': 'From Throw In'}</td>
       <td>...</td>
-      <td>NaN</td>
-      <td>2020-02-12 20:31:06.928999936</td>
       <td>0</td>
       <td>Foul Won</td>
       <td>57.6</td>
@@ -924,6 +922,8 @@ gdf.groupby('possession').tail(1)
       <td>POINT (57.60000 25.10000)</td>
       <td>West Ham United LFC</td>
       <td>0</td>
+      <td>From Throw In</td>
+      <td>Martha Thomas</td>
     </tr>
     <tr>
       <th>61</th>
@@ -938,8 +938,6 @@ gdf.groupby('possession').tail(1)
       <td>{'id': 972, 'name': 'West Ham United LFC'}</td>
       <td>{'id': 3, 'name': 'From Free Kick'}</td>
       <td>...</td>
-      <td>NaN</td>
-      <td>2020-02-12 20:32:04.000999936</td>
       <td>0</td>
       <td>Ball Receipt*</td>
       <td>111.4</td>
@@ -948,6 +946,8 @@ gdf.groupby('possession').tail(1)
       <td>POINT (111.40000 40.10000)</td>
       <td>West Ham United LFC</td>
       <td>0</td>
+      <td>From Free Kick</td>
+      <td>Martha Thomas</td>
     </tr>
     <tr>
       <th>...</th>
@@ -986,8 +986,6 @@ gdf.groupby('possession').tail(1)
       <td>{'id': 972, 'name': 'West Ham United LFC'}</td>
       <td>{'id': 4, 'name': 'From Throw In'}</td>
       <td>...</td>
-      <td>NaN</td>
-      <td>2020-02-12 22:19:58.903000064</td>
       <td>0</td>
       <td>Miscontrol</td>
       <td>19.3</td>
@@ -996,6 +994,8 @@ gdf.groupby('possession').tail(1)
       <td>POINT (19.30000 71.10000)</td>
       <td>West Ham United LFC</td>
       <td>0</td>
+      <td>From Throw In</td>
+      <td>Kate Longhurst</td>
     </tr>
     <tr>
       <th>2812</th>
@@ -1010,8 +1010,6 @@ gdf.groupby('possession').tail(1)
       <td>{'id': 974, 'name': 'Reading WFC'}</td>
       <td>{'id': 4, 'name': 'From Throw In'}</td>
       <td>...</td>
-      <td>NaN</td>
-      <td>2020-02-12 22:20:32.992999936</td>
       <td>0</td>
       <td>Duel</td>
       <td>4.9</td>
@@ -1020,6 +1018,8 @@ gdf.groupby('possession').tail(1)
       <td>POINT (4.90000 75.10000)</td>
       <td>Reading WFC</td>
       <td>1</td>
+      <td>From Throw In</td>
+      <td>Laura Vetterlein</td>
     </tr>
     <tr>
       <th>2821</th>
@@ -1034,8 +1034,6 @@ gdf.groupby('possession').tail(1)
       <td>{'id': 974, 'name': 'Reading WFC'}</td>
       <td>{'id': 4, 'name': 'From Throw In'}</td>
       <td>...</td>
-      <td>NaN</td>
-      <td>2020-02-12 22:20:51.607000064</td>
       <td>0</td>
       <td>Block</td>
       <td>7.8</td>
@@ -1044,6 +1042,8 @@ gdf.groupby('possession').tail(1)
       <td>POINT (7.80000 75.80000)</td>
       <td>Reading WFC</td>
       <td>1</td>
+      <td>From Throw In</td>
+      <td>Alisha Lehmann</td>
     </tr>
     <tr>
       <th>2827</th>
@@ -1058,8 +1058,6 @@ gdf.groupby('possession').tail(1)
       <td>{'id': 974, 'name': 'Reading WFC'}</td>
       <td>{'id': 4, 'name': 'From Throw In'}</td>
       <td>...</td>
-      <td>NaN</td>
-      <td>2020-02-12 22:21:03.264000000</td>
       <td>0</td>
       <td>Duel</td>
       <td>6.4</td>
@@ -1068,6 +1066,8 @@ gdf.groupby('possession').tail(1)
       <td>POINT (6.40000 75.10000)</td>
       <td>Reading WFC</td>
       <td>1</td>
+      <td>From Throw In</td>
+      <td>Alisha Lehmann</td>
     </tr>
     <tr>
       <th>2830</th>
@@ -1082,8 +1082,6 @@ gdf.groupby('possession').tail(1)
       <td>{'id': 974, 'name': 'Reading WFC'}</td>
       <td>{'id': 4, 'name': 'From Throw In'}</td>
       <td>...</td>
-      <td>NaN</td>
-      <td>2020-02-12 22:21:05.671000064</td>
       <td>0</td>
       <td>Half End</td>
       <td>None</td>
@@ -1092,10 +1090,12 @@ gdf.groupby('possession').tail(1)
       <td>None</td>
       <td>Reading WFC</td>
       <td>0</td>
+      <td>From Throw In</td>
+      <td>None</td>
     </tr>
   </tbody>
 </table>
-<p>197 rows × 49 columns</p>
+<p>197 rows × 51 columns</p>
 </div>
 
 
@@ -1137,8 +1137,6 @@ gdf.groupby('possession').head(1)
       <th>possession_team</th>
       <th>play_pattern</th>
       <th>...</th>
-      <th>off_camera</th>
-      <th>event_time</th>
       <th>goal</th>
       <th>event_type</th>
       <th>x_coord</th>
@@ -1147,6 +1145,8 @@ gdf.groupby('possession').head(1)
       <th>geometry</th>
       <th>p_team_name</th>
       <th>diff_name</th>
+      <th>pattern_name</th>
+      <th>player_name</th>
     </tr>
   </thead>
   <tbody>
@@ -1163,8 +1163,6 @@ gdf.groupby('possession').head(1)
       <td>{'id': 974, 'name': 'Reading WFC'}</td>
       <td>{'id': 1, 'name': 'Regular Play'}</td>
       <td>...</td>
-      <td>NaN</td>
-      <td>2020-02-12 20:30:00.000000000</td>
       <td>0</td>
       <td>Starting XI</td>
       <td>None</td>
@@ -1173,6 +1171,8 @@ gdf.groupby('possession').head(1)
       <td>None</td>
       <td>Reading WFC</td>
       <td>0</td>
+      <td>Regular Play</td>
+      <td>None</td>
     </tr>
     <tr>
       <th>4</th>
@@ -1187,8 +1187,6 @@ gdf.groupby('possession').head(1)
       <td>{'id': 974, 'name': 'Reading WFC'}</td>
       <td>{'id': 9, 'name': 'From Kick Off'}</td>
       <td>...</td>
-      <td>NaN</td>
-      <td>2020-02-12 20:30:00.046000128</td>
       <td>0</td>
       <td>Pass</td>
       <td>61</td>
@@ -1197,6 +1195,8 @@ gdf.groupby('possession').head(1)
       <td>POINT (61.00000 39.90000)</td>
       <td>Reading WFC</td>
       <td>0</td>
+      <td>From Kick Off</td>
+      <td>Jade Moore</td>
     </tr>
     <tr>
       <th>26</th>
@@ -1211,8 +1211,6 @@ gdf.groupby('possession').head(1)
       <td>{'id': 972, 'name': 'West Ham United LFC'}</td>
       <td>{'id': 3, 'name': 'From Free Kick'}</td>
       <td>...</td>
-      <td>NaN</td>
-      <td>2020-02-12 20:30:27.428999936</td>
       <td>0</td>
       <td>Pass</td>
       <td>17.9</td>
@@ -1221,6 +1219,8 @@ gdf.groupby('possession').head(1)
       <td>POINT (17.90000 67.30000)</td>
       <td>West Ham United LFC</td>
       <td>0</td>
+      <td>From Free Kick</td>
+      <td>Gilly Louise Scarlett Flaherty</td>
     </tr>
     <tr>
       <th>32</th>
@@ -1235,8 +1235,6 @@ gdf.groupby('possession').head(1)
       <td>{'id': 972, 'name': 'West Ham United LFC'}</td>
       <td>{'id': 4, 'name': 'From Throw In'}</td>
       <td>...</td>
-      <td>NaN</td>
-      <td>2020-02-12 20:30:57.241999872</td>
       <td>0</td>
       <td>Pass</td>
       <td>47.1</td>
@@ -1245,6 +1243,8 @@ gdf.groupby('possession').head(1)
       <td>POINT (47.10000 0.00000)</td>
       <td>West Ham United LFC</td>
       <td>0</td>
+      <td>From Throw In</td>
+      <td>Cecilie Redisch Kvamme</td>
     </tr>
     <tr>
       <th>46</th>
@@ -1259,8 +1259,6 @@ gdf.groupby('possession').head(1)
       <td>{'id': 972, 'name': 'West Ham United LFC'}</td>
       <td>{'id': 3, 'name': 'From Free Kick'}</td>
       <td>...</td>
-      <td>NaN</td>
-      <td>2020-02-12 20:31:53.820999936</td>
       <td>0</td>
       <td>Pass</td>
       <td>54.3</td>
@@ -1269,6 +1267,8 @@ gdf.groupby('possession').head(1)
       <td>POINT (54.30000 24.10000)</td>
       <td>West Ham United LFC</td>
       <td>0</td>
+      <td>From Free Kick</td>
+      <td>Tessel Middag</td>
     </tr>
     <tr>
       <th>...</th>
@@ -1307,8 +1307,6 @@ gdf.groupby('possession').head(1)
       <td>{'id': 972, 'name': 'West Ham United LFC'}</td>
       <td>{'id': 4, 'name': 'From Throw In'}</td>
       <td>...</td>
-      <td>NaN</td>
-      <td>2020-02-12 22:19:57.999000064</td>
       <td>0</td>
       <td>Pass</td>
       <td>8</td>
@@ -1317,6 +1315,8 @@ gdf.groupby('possession').head(1)
       <td>POINT (8.00000 79.90000)</td>
       <td>West Ham United LFC</td>
       <td>0</td>
+      <td>From Throw In</td>
+      <td>Laura Vetterlein</td>
     </tr>
     <tr>
       <th>2803</th>
@@ -1331,8 +1331,6 @@ gdf.groupby('possession').head(1)
       <td>{'id': 974, 'name': 'Reading WFC'}</td>
       <td>{'id': 4, 'name': 'From Throw In'}</td>
       <td>...</td>
-      <td>NaN</td>
-      <td>2020-02-12 22:20:18.724000000</td>
       <td>0</td>
       <td>Pass</td>
       <td>108.1</td>
@@ -1341,6 +1339,8 @@ gdf.groupby('possession').head(1)
       <td>POINT (108.10000 0.00000)</td>
       <td>Reading WFC</td>
       <td>0</td>
+      <td>From Throw In</td>
+      <td>Natasha Harding</td>
     </tr>
     <tr>
       <th>2813</th>
@@ -1355,8 +1355,6 @@ gdf.groupby('possession').head(1)
       <td>{'id': 974, 'name': 'Reading WFC'}</td>
       <td>{'id': 4, 'name': 'From Throw In'}</td>
       <td>...</td>
-      <td>NaN</td>
-      <td>2020-02-12 22:20:47.835000064</td>
       <td>0</td>
       <td>Pass</td>
       <td>114.5</td>
@@ -1365,6 +1363,8 @@ gdf.groupby('possession').head(1)
       <td>POINT (114.50000 0.00000)</td>
       <td>Reading WFC</td>
       <td>0</td>
+      <td>From Throw In</td>
+      <td>Natasha Harding</td>
     </tr>
     <tr>
       <th>2822</th>
@@ -1379,8 +1379,6 @@ gdf.groupby('possession').head(1)
       <td>{'id': 974, 'name': 'Reading WFC'}</td>
       <td>{'id': 4, 'name': 'From Throw In'}</td>
       <td>...</td>
-      <td>NaN</td>
-      <td>2020-02-12 22:20:59.672999936</td>
       <td>0</td>
       <td>Pass</td>
       <td>111.6</td>
@@ -1389,6 +1387,8 @@ gdf.groupby('possession').head(1)
       <td>POINT (111.60000 0.00000)</td>
       <td>Reading WFC</td>
       <td>0</td>
+      <td>From Throw In</td>
+      <td>Natasha Harding</td>
     </tr>
     <tr>
       <th>2828</th>
@@ -1403,8 +1403,6 @@ gdf.groupby('possession').head(1)
       <td>{'id': 974, 'name': 'Reading WFC'}</td>
       <td>{'id': 4, 'name': 'From Throw In'}</td>
       <td>...</td>
-      <td>NaN</td>
-      <td>2020-02-12 22:21:05.609999872</td>
       <td>0</td>
       <td>Pass</td>
       <td>113.7</td>
@@ -1413,10 +1411,12 @@ gdf.groupby('possession').head(1)
       <td>POINT (113.70000 0.00000)</td>
       <td>Reading WFC</td>
       <td>0</td>
+      <td>From Throw In</td>
+      <td>Jade Moore</td>
     </tr>
   </tbody>
 </table>
-<p>197 rows × 49 columns</p>
+<p>197 rows × 51 columns</p>
 </div>
 
 
@@ -1760,7 +1760,562 @@ for n in names:
 ![png](images/6/output_38_0.png)
 
 
+## Hulls and Delaunay triangulations
+
+As a side note, producing the delaunay triangulation as I've done before actually is the basis for the convex hull. It is the outside edge of the triangles. So if you have the delaunay triangulation you actually have the voronoi diagram and convex hull. While the voronoi tesselation is harder to calculate from the delaunay triangulation, we can use the dissolve function of a geodataframe to produce the convex hull. 
+
+The way the geodataframe dissolve function works I need a column to specify (it's like groupby), but I want to groupby all. So I create a new field with the same value and that produces the single polygon boundary a.k.a the convex hull.
+
 
 ```python
+possession = first.loc[(first['event_type'].isin(['Pass', 
+                                      'Ball Recovery',
+                                      'Duel',
+                                      'Interception']))]
 
+player = possession.loc[(possession['player_name']=='Josanne Potter') & (possession['period']==1)].copy()
+points = player[['x_coord','y_coord']].values
+hull = ConvexHull(points)
+ax = pitchgdf.plot(facecolor = SpatialSoccer.GREEN_PITCH_COLOR,edgecolor=SpatialSoccer.WHITE_LINE_COLOR);
+player.plot(ax=ax)
+for simplex in hull.simplices:
+    ax.plot(points[simplex, 0], points[simplex, 1], 'k-')
 ```
+
+
+![png](images/6/output_40_0.png)
+
+
+
+```python
+from scipy.spatial import Delaunay
+tri = Delaunay(points)
+index_list = []
+tri_geom = []
+for i,t in enumerate(points[tri.simplices]):
+    tri_geom.append(Polygon(t))
+    index_list.append(i)
+tri_gdf = gpd.GeoDataFrame({"order":index_list},geometry=tri_geom)
+tri_gdf.plot();
+```
+
+
+![png](images/6/output_41_0.png)
+
+
+
+```python
+tri_gdf['all']=0
+tri_gdf.dissolve(by='all').plot();
+```
+
+
+![png](images/6/output_42_0.png)
+
+
+
+```python
+ax = pitchgdf.plot(facecolor = SpatialSoccer.GREEN_PITCH_COLOR,edgecolor=SpatialSoccer.WHITE_LINE_COLOR);
+player.plot(ax=ax)
+tri_gdf.dissolve(by='all').plot(ax=ax,edgecolor="black",facecolor="None");
+```
+
+
+![png](images/6/output_43_0.png)
+
+
+## Concave hull
+
+Less commonly discussed is the concave hull. This more closely follows the outline of the points. The resason is probably there are less implemenations of the concave hull available. I didn't look, but I don't think that SciPy includes one. I've ported one algorithm to Python that can be used.
+
+It is based on the shared nearest neighbor algorithm proposed here:
+
+**Moreira, A.J., & Santos, M.Y. (2007). Concave hull: A k-nearest neighbours approach for the computation of the region occupied by a set of points. GRAPP.**
+
+The class is concaveHullSimple, and the function create_polygon will create a concave hull around the points. It expects a list of shapely Point objects.
+
+The result is subtle, but the you can see the outside line now intersects the point near the center left of the field.
+
+
+
+
+
+```python
+from cchull import concaveHullSimple
+pntgeo = player.geometry.values
+cch = concaveHullSimple()
+poly = cch.create_polygon(pntgeo)
+gdfp = gpd.GeoDataFrame({"index":[1]},geometry = [poly])
+ax = pitchgdf.plot(facecolor = SpatialSoccer.GREEN_PITCH_COLOR,edgecolor=SpatialSoccer.WHITE_LINE_COLOR);
+player.plot(ax=ax)
+gdfp.plot(ax=ax,edgecolor="black",facecolor="None");
+```
+
+    Current k 3
+    Number k: 3
+    Step 2
+    Step 3
+    Step 4
+    Step 5
+    Step 6
+    cpoint equals firstpoint, length of pointList 1
+    
+
+
+![png](images/6/output_45_1.png)
+
+
+
+```python
+names = possession.loc[(possession['p_team_name']== 'Reading WFC')]['player_name'].unique()
+name_colors = {n:c for n,c in zip(names,SpatialSoccer.ELEVEN_COLORS+['#813251'][:len(names)])}
+def plotHull(ax,pntgeo, color):
+    cch = concaveHullSimple()
+    poly = cch.create_polygon(pntgeo)
+    gdfp = gpd.GeoDataFrame({"index":[1]},geometry = [poly])
+    gdfp.plot(ax=ax,edgecolor=color,facecolor="None");
+        
+ax = pitchgdf.plot(facecolor = SpatialSoccer.GREEN_PITCH_COLOR,edgecolor=SpatialSoccer.WHITE_LINE_COLOR);
+
+for i,row in possession.loc[(possession['p_team_name']== 'Reading WFC')].iterrows():
+    ax.scatter(row['x_coord'],row['y_coord'],label=row['player_name'],color=name_colors[row['player_name']])
+    
+
+for n in names:
+    plotHull(ax,
+             possession.loc[(possession['player_name']==n) ]['geometry'].values,
+            name_colors[n])
+    avg = possession.loc[(possession['player_name']==n)][['x_coord','y_coord']].mean().values
+    ax.text(x=avg[0],y=avg[1],s =n,fontsize=10,ha='center')
+```
+
+    Current k 3
+    Number k: 3
+    Step 2
+    Step 3
+    Step 4
+    Step 5
+    Step 6
+    Step 7
+    Step 8
+    cpoint equals firstpoint, length of pointList 3
+    Current k 3
+    Number k: 3
+    Step 2
+    Step 3
+    Step 4
+    Step 5
+    Step 6
+    Step 7
+    Step 8
+    Step 9
+    Step 10
+    Step 11
+    Step 12
+    cpoint equals firstpoint, length of pointList 2
+    Current k 3
+    Number k: 3
+    Step 2
+    Step 3
+    Step 4
+    Step 5
+    Step 6
+    Step 7
+    Step 8
+    Step 9
+    Step 10
+    Step 11
+    Step 12
+    Step 13
+    Step 14
+    Step 15
+    Step 16
+    Step 17
+    Step 18
+    cpoint equals firstpoint, length of pointList 14
+    Not all points contained increasing k
+    Current k 4
+    Number k: 4
+    Step 2
+    Step 3
+    Step 4
+    Step 5
+    Step 6
+    Step 7
+    Step 8
+    Step 9
+    Step 10
+    Step 11
+    Step 12
+    Step 13
+    Step 14
+    Step 15
+    Step 16
+    Step 17
+    Step 18
+    Step 19
+    Step 20
+    Step 21
+    Step 22
+    cpoint equals firstpoint, length of pointList 10
+    Not all points contained increasing k
+    Current k 5
+    Number k: 5
+    Step 2
+    Step 3
+    Step 4
+    Step 5
+    Step 6
+    Step 7
+    Step 8
+    Step 9
+    Step 10
+    Step 11
+    Step 12
+    Step 13
+    Step 14
+    Step 15
+    Step 16
+    Step 17
+    Step 18
+    Step 19
+    Step 20
+    cpoint equals firstpoint, length of pointList 12
+    Not all points contained increasing k
+    Current k 6
+    Number k: 6
+    Step 2
+    Step 3
+    Step 4
+    Step 5
+    Step 6
+    Step 7
+    Step 8
+    Step 9
+    Step 10
+    Step 11
+    Step 12
+    Step 13
+    Step 14
+    Step 15
+    cpoint equals firstpoint, length of pointList 17
+    Not all points contained increasing k
+    Current k 7
+    Number k: 7
+    Step 2
+    Step 3
+    Step 4
+    Step 5
+    Step 6
+    Step 7
+    Step 8
+    Step 9
+    Step 10
+    Step 11
+    Step 12
+    Step 13
+    Step 14
+    Step 15
+    Step 16
+    cpoint equals firstpoint, length of pointList 16
+    Not all points contained increasing k
+    Current k 8
+    Number k: 8
+    Step 2
+    Step 3
+    Step 4
+    Step 5
+    Step 6
+    Step 7
+    Step 8
+    Step 9
+    Step 10
+    Step 11
+    Step 12
+    Step 13
+    Step 14
+    Step 15
+    cpoint equals firstpoint, length of pointList 17
+    Not all points contained increasing k
+    Current k 9
+    Number k: 9
+    Step 2
+    Step 3
+    Step 4
+    Step 5
+    Step 6
+    Step 7
+    Step 8
+    Step 9
+    Step 10
+    Step 11
+    Step 12
+    Step 13
+    cpoint equals firstpoint, length of pointList 19
+    Not all points contained increasing k
+    Current k 10
+    Number k: 10
+    Step 2
+    Step 3
+    Step 4
+    Step 5
+    Step 6
+    Step 7
+    Step 8
+    Step 9
+    Step 10
+    Step 11
+    Step 12
+    cpoint equals firstpoint, length of pointList 20
+    Not all points contained increasing k
+    Current k 11
+    Number k: 11
+    Step 2
+    Step 3
+    Step 4
+    Step 5
+    Step 6
+    Step 7
+    Step 8
+    Step 9
+    Step 10
+    Step 11
+    Step 12
+    cpoint equals firstpoint, length of pointList 20
+    Not all points contained increasing k
+    Current k 12
+    Number k: 12
+    Step 2
+    Step 3
+    Step 4
+    Step 5
+    Step 6
+    Step 7
+    Step 8
+    Step 9
+    Step 10
+    cpoint equals firstpoint, length of pointList 22
+    Not all points contained increasing k
+    Current k 13
+    Number k: 13
+    Step 2
+    Step 3
+    Step 4
+    Step 5
+    Step 6
+    Step 7
+    Step 8
+    Step 9
+    Step 10
+    cpoint equals firstpoint, length of pointList 22
+    Not all points contained increasing k
+    Current k 14
+    Number k: 14
+    Step 2
+    Step 3
+    Step 4
+    Step 5
+    Step 6
+    Step 7
+    Step 8
+    Step 9
+    Step 10
+    cpoint equals firstpoint, length of pointList 22
+    Not all points contained increasing k
+    Current k 15
+    Number k: 15
+    Step 2
+    Step 3
+    Step 4
+    Step 5
+    Step 6
+    Step 7
+    Step 8
+    Step 9
+    cpoint equals firstpoint, length of pointList 23
+    Not all points contained increasing k
+    Current k 16
+    Number k: 16
+    Step 2
+    Step 3
+    Step 4
+    Step 5
+    Step 6
+    Step 7
+    Step 8
+    cpoint equals firstpoint, length of pointList 24
+    Not all points contained increasing k
+    Current k 17
+    Number k: 17
+    Step 2
+    Step 3
+    Step 4
+    Step 5
+    Step 6
+    Step 7
+    Step 8
+    cpoint equals firstpoint, length of pointList 24
+    Not all points contained increasing k
+    Current k 18
+    Number k: 18
+    Step 2
+    Step 3
+    Step 4
+    Step 5
+    Step 6
+    Step 7
+    Step 8
+    cpoint equals firstpoint, length of pointList 24
+    Not all points contained increasing k
+    Current k 19
+    Number k: 19
+    Step 2
+    Step 3
+    Step 4
+    Step 5
+    Step 6
+    Step 7
+    Step 8
+    cpoint equals firstpoint, length of pointList 24
+    Not all points contained increasing k
+    Current k 20
+    Number k: 20
+    Step 2
+    Step 3
+    Step 4
+    Step 5
+    Step 6
+    Step 7
+    Step 8
+    cpoint equals firstpoint, length of pointList 24
+    Not all points contained increasing k
+    Current k 21
+    Number k: 21
+    Step 2
+    Step 3
+    Step 4
+    Step 5
+    Step 6
+    Step 7
+    Step 8
+    cpoint equals firstpoint, length of pointList 24
+    Not all points contained increasing k
+    Current k 22
+    Number k: 22
+    Step 2
+    Step 3
+    Step 4
+    Step 5
+    Step 6
+    Step 7
+    Step 8
+    Step 9
+    cpoint equals firstpoint, length of pointList 23
+    Current k 3
+    Number k: 3
+    Step 2
+    Step 3
+    Step 4
+    Step 5
+    Step 6
+    Step 7
+    Step 8
+    Step 9
+    Step 10
+    Step 11
+    Step 12
+    Step 13
+    Step 14
+    Step 15
+    Step 16
+    Step 17
+    Step 18
+    cpoint equals firstpoint, length of pointList 2
+    Not all points contained increasing k
+    Current k 4
+    Number k: 4
+    Step 2
+    Step 3
+    Step 4
+    Step 5
+    Step 6
+    Step 7
+    Step 8
+    Step 9
+    Step 10
+    Step 11
+    Step 12
+    Step 13
+    Step 14
+    Step 15
+    Step 16
+    cpoint equals firstpoint, length of pointList 4
+    Not all points contained increasing k
+    Current k 5
+    Number k: 5
+    Step 2
+    Step 3
+    Step 4
+    Step 5
+    Step 6
+    Step 7
+    Step 8
+    Step 9
+    Step 10
+    Step 11
+    Step 12
+    Step 13
+    Step 14
+    Step 15
+    cpoint equals firstpoint, length of pointList 5
+    Step 16
+    cpoint equals firstpoint, length of pointList 4
+    Step 17
+    cpoint equals firstpoint, length of pointList 3
+    Current k 3
+    Number k: 3
+    Step 2
+    Step 3
+    Step 4
+    Step 5
+    Step 6
+    cpoint equals firstpoint, length of pointList 1
+    Current k 3
+    Number k: 3
+    Step 2
+    Step 3
+    Step 4
+    Step 5
+    Step 6
+    Step 7
+    Step 8
+    cpoint equals firstpoint, length of pointList 5
+    Current k 3
+    Current k 3
+    Number k: 3
+    Step 2
+    Step 3
+    Step 4
+    Current k 3
+    Number k: 3
+    Step 2
+    Step 3
+    Step 4
+    Step 5
+    cpoint equals firstpoint, length of pointList 4
+    Step 6
+    Step 7
+    Step 8
+    cpoint equals firstpoint, length of pointList 1
+    Current k 3
+    Number k: 3
+    Step 2
+    Step 3
+    Step 4
+    Current k 3
+    Current k 3
+    
+
+
+![png](images/6/output_46_1.png)
+
