@@ -47,6 +47,8 @@ The dataset used in these examples are pulled from StatsBomb's open datasets. As
 - [StatsBomb R package](http://statsbomb.com/wp-content/uploads/2019/07/Using-StatsBomb-Data-In-R_up.pdf) <- one of the required packages is no longer in the R repository? The presentation is helpful to see how some analysis can be done.
 - [StatsBomb Messi](https://statsbomb.com/2019/07/messi-data-release-part-1-working-with-statsbomb-data-in-r/)
 - [StatsBomb in Use](https://statsbomb.com/2019/05/statsbomb-data-one-year-on/)
+- [wyscout open data](https://figshare.com/collections/Soccer_match_event_dataset/4415000) [paper for the data](https://www.nature.com/articles/s41597-019-0247-7)
+Pappalardo, L., Cintia, P., Rossi, A. et al. A public data set of spatio-temporal match events in soccer competitions. Sci Data 6, 236 (2019). https://doi.org/10.1038/s41597-019-0247-7
 
 ## Python
 
