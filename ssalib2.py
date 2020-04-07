@@ -2,6 +2,7 @@ import json
 import math
 import geopandas as gpd
 import pandas as pd
+import numpy as np
 from shapely.geometry.point import Point
 from shapely.geometry import LineString
 from shapely.geometry import Polygon
@@ -177,6 +178,7 @@ class SpatialSoccer(object):
                 event_obj.possession_id = e["possession"]
                 event_obj.possession_team_name = e['possession_team']['name']
                 event_obj.event_team_name = e['team']['name']
+                event_obj.match_id = match_obj.match_id
                 try:
                     event_obj.event_player = e['player']['name']
                 except:
@@ -196,8 +198,14 @@ class SpatialSoccer(object):
 
                 if event_obj.event_name == "Shot":
                     #print(e)
+                    try:
+                        event_obj.xg = e['shot']['statsbomb_xg']
+                    except:
+                        pass
                     if e['shot']['outcome']['id'] == 97:
                         event_obj.is_goal = 1
+                    else:
+                        event_obj.is_goal = 0
                 else:
                     event_obj.is_goal = 0
                 start_locations = [x for x in SpatialSoccer.gen_dict_extract("location",e)]
@@ -542,7 +550,32 @@ class SpatialSoccer(object):
                 
         gdf = gpd.GeoDataFrame({"cell":ids,"centroid":cent,"x_coord":xcoords,"y_coord":ycoords,"time":zcoords},geometry=geom)
         return gdf
-    
+
+    @staticmethod
+    def adhoc_bandwidth(event_points):
+        """event dataframe"""
+        xmean = np.mean(event_points[:,0])
+        ymean = np.mean(event_points[:,1])
+        sdx = np.sum(np.square(event_points[:,0]-xmean))/len(event_points) #standard distance 
+        sdy = np.sum(np.square(event_points[:,1]-ymean))/len(event_points)
+        rho = 0.5 * np.sqrt(sdx+sdy)
+        bandwidth = rho * np.exp(-((1.0/6.0)*np.log(len(event_points))))
+        return bandwidth
+
+    @staticmethod
+    def two_d_kernel(cell_pnts,event_pnts,bandwidth):
+        densities = []
+        for x,y in cell_pnts:
+            dist = np.sqrt(np.square(x - event_pnts[:,0])+np.square(y - event_pnts[:,1]))
+            if len(dist[dist<bandwidth]) > 0:
+                u = dist[dist<bandwidth] / bandwidth
+                den = np.sum(np.piecewise(u, [u <= 1.0,u > 1.0],[lambda u:(15.0/16.0) * (np.power((1-np.power(u,2)),2)),lambda u: 0.0]))
+                den = 1/(len(event_pnts)*bandwidth)*den
+                densities.append(den)
+            else:
+                densities.append(0)
+        return densities
+
     @staticmethod
     def space_time_kernel_density(st_cell_points,event_points, bandwidth, bandwidth_time):
         """Returns the space-time densities
@@ -605,6 +638,30 @@ class SpatialSoccer(object):
                     for d in v:
                         for result in SpatialSoccer.gen_dict_extract(key, d):
                             yield result
+    
+    @staticmethod
+    def shots_from_trajectories(trajectories,place_index = -1):
+        shot_place = {"trajectory_id":[],"point":[],"scored":[],"period":[],'x_coord':[],'y_coord':[]}
+        for p_id in list(trajectories['trajectory_id'].unique()):
+            traj = trajectories[trajectories['trajectory_id']==p_id].sort_values("temporal_distance").copy()
+            try:
+                p = Point(traj.iloc[place_index][['start_x','start_y']].values)
+                shot_place["trajectory_id"].append(p_id)
+                shot_place["point"].append(p)
+                shot_place["period"].append(traj['period'].mean())
+                shot_place["x_coord"].append(p.x)
+                shot_place["y_coord"].append(p.y)
+                if traj[['is_goal']].sum().iloc[0] >0:
+                    shot_place["scored"].append(1)
+                else:
+                    shot_place["scored"].append(0)
+            except:
+                pass
+            del traj
+        shot_place_gdf = gpd.GeoDataFrame(shot_place,geometry=shot_place['point'])
+        del shot_place
+        return shot_place_gdf
+
 class match(object):
     def __init__(self,match_id):
         self.match_id = match_id
@@ -649,8 +706,57 @@ class match(object):
                     geometry.append(getattr(e,"end_point"))
             return geometry
 
+    def build_match_trajectories(self,team_name,only_goals=True,for_team=True):
+        """Builds a dataframe of trajectories for either shots (only_goals == false) or goals (only_goals == true)
+        team_name: team from the match to build the trajectories
+        only_goals: only if you want to use goals, returns none if there were no goals for the team
+        for_team: goals for == True, goals against == False
+        """
+        home = True
+        goal_count = 0
+        trajectories = None
+
+        if for_team == False:
+            if self.home_team_name == team_name:
+                team_name = self.away_team_name
+            else:
+                team_name = self.home_team_name
+
+        if self.home_team_name != team_name:
+            home = False
+        if home:
+            goal_count = self.home_team_score
+        else:
+            goal_count = self.away_team_score
+        
+
+        gdf = gpd.GeoDataFrame(self.build_dictionary_from_events(),geometry=self.build_point_geometry_list())
+        if only_goals == True:
+            if goal_count > 0:
+                possessions = list(gdf.loc[(gdf['is_goal']==1)&(gdf['event_team_name']==team_name)]['possession_id'].values)
+            else:
+                return None
+        else:
+            possessions = list(gdf.loc[(gdf['event_name']=='Shot')&(gdf['event_team_name']==team_name)]['possession_id'].values)
+        
+        for p in possessions:
+            possession_id = "{0}_{1}".format(self.match_id,p)
+            traj = gdf.loc[gdf['possession_id']==p,].copy()
+            traj['trajectory_id'] = possession_id
+            drop_rows = list(traj[traj['event_team_name']!=team_name].index)
+            traj.drop(drop_rows,inplace=True)
+            traj['temporal_distance'] = traj['event_time'].apply(lambda x: (x-self.match_date_time).total_seconds())
+            try:
+                trajectories = trajectories.append(traj[traj['event_name'].isin(["Ball Receipt*","Pass","Carry","Shot"])],ignore_index=True,sort=False)
+            except:
+                trajectories = traj[traj['event_name'].isin(["Ball Receipt*","Pass","Carry","Shot"])].copy()
+            del traj
+        return trajectories
+
+    
+
 class event(object):
-    EVENT_NUMERIC_PROPERTY_LIST = ["start_x","start_y","end_x","end_y","is_goal","period","match_id"]
+    EVENT_NUMERIC_PROPERTY_LIST = ["start_x","start_y","end_x","end_y","is_goal","period","match_id","xg"]
     EVENT_STRING_PROPERTY_LIST = ["event_id","event_name","subevent_name","event_team_name","possession_team_name",
     "event_player","possession_id","timestamp","body_part","tags","original_json"]
     EVENT_DATETIME_PROPERTY_LIST = ["event_time"]
