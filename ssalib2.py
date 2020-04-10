@@ -9,6 +9,7 @@ from shapely.geometry import Polygon
 from dateutil.parser import parse
 from datetime import datetime
 from datetime import timedelta
+import csv
 
 class SpatialSoccer(object):
     __version__ = 0
@@ -31,6 +32,7 @@ class SpatialSoccer(object):
                         21:(80,76),22:(100,28),23:(100,44),24:(100,60),25:(90,44)}
     STATS_BOMB_DATA = 1
     WYSCOUT_DATA = 2
+    METRICA_DATA = 3
     def __init__(self):
         self.parse_time = True
         self.add_type = True
@@ -83,6 +85,8 @@ class SpatialSoccer(object):
             return self.get_matches_statsbomb(path_to_matches,team_name)
         if data_source ==self.WYSCOUT_DATA:
             return self.get_matches_wyscout(path_to_matches,team_name)
+        if data_source == self.METRICA_DATA:
+            return self.get_matches_metrica(path_to_matches,team_name)
         return None
     
     def get_matches_statsbomb(self,path_to_matches,team_name=None):
@@ -114,6 +118,32 @@ class SpatialSoccer(object):
                         matches.append(mt)
         return matches
 
+    def get_matches_metrica(self,path_to_matches,team_name=None):
+        matches = []
+        with open(path_to_matches, "r",encoding='utf-8') as read_file:
+            in_matches = json.load(read_file)
+            
+            for m in in_matches:
+                mt = match(m['match_id'])
+                mt.home_team_id = m['home_team']['home_team_id']
+                mt.home_team_name = m['home_team']['home_team_name']
+                mt.home_team_score = m['home_score']
+                mt.away_team_id = m['away_team']['away_team_id']
+                mt.away_team_name = m['away_team']['away_team_name']
+                mt.away_team_score = m['away_score']
+                mt.match_date_time = parse(m['match_date_str'])
+                if team_name:
+                    if mt.home_team_name == team_name:
+                        matches.append(mt)
+                    elif mt.away_team_name == team_name:
+                        matches.append(mt)
+                    else:
+                        pass
+                else:
+                    if m['match_id']:
+                        matches.append(mt)
+        return matches
+        
     def get_matches_wyscout(self,path_to_matches,team_name=None):
         matches = []
         with open(path_to_matches, "r",encoding='utf-8') as read_file:
@@ -156,6 +186,8 @@ class SpatialSoccer(object):
             return self.load_events_statsbomb(path_to_events,match_obj)
         if data_source == self.WYSCOUT_DATA:
             return self.load_events_wyscout(path_to_events,match_obj)
+        if data_source == self.METRICA_DATA:
+            return self.load_events_metrica(path_to_events,match_obj)
 
     def load_events_statsbomb(self,path_to_events,match_obj):
         """Loads a single match's events from a match. Provide either the matchid, or the index.
@@ -310,6 +342,89 @@ class SpatialSoccer(object):
             return match_gdf
             
         return None     
+    
+    def load_events_metrica(self,path_to_events,match_obj):
+        """Loads a single match's events from a match. Provide either the matchid, or the index.
+        path_to_events: path to folder containing events for matches
+        match_obj: match object that contains information about the match
+        returns the geodataframe of match events.
+        """
+        # TODO: Add exception handling.
+        # TODO: Match id numbers to text
+
+        c_i = {"Team":0,"Type":1,"Subtype":2,"Period":3,"Start Frame":4,"Start Time [s]":5,"End Frame":6,
+                        "End Time [s]":7,"From":8,"To":9,"Start X":10,"Start Y":11,"End X":12,"End Y":13}
+       
+        path_to_events = path_to_events + "\\" + match_obj.match_id + ".csv"
+        print(path_to_events)
+        with open(path_to_events, "r",encoding='utf-8',newline='') as read_file:
+            reader = csv.reader(read_file)
+            idx = 1000
+            init = 0
+            for e in reader:
+                if init == 0:
+                    init+=1
+                    pass
+                else:
+                    event_obj = event(idx)
+                    event_obj.match_id = match_obj.match_id
+                    event_obj.period = e[c_i['Period']]
+                    event_obj.possession_id = None
+                    event_obj.possession_team_name = None
+                    event_obj.event_team_name = e[c_i['Team']]
+                    try:
+                        event_obj.event_player = e[c_i['From']]
+                    except:
+                        pass
+                    event_obj.event_name = e[c_i['Type']]
+                    event_obj.subevent_name = e[c_i['Subtype']]
+                    event_obj.is_goal = None
+                    #if event_obj.event_name == "Shot":
+                    #    event_obj.is_goal = 0
+                    #    for t in e['tags']:
+                    #        if t['id'] == 101:
+                    #            event_obj.is_goal = 1
+                    #            break
+                    #else:
+                    #    event_obj.is_goal = 0
+                    event_obj.tags = None #"|".join([str(t["id"]) for t in e["tags"]])
+                    locations = [[e[c_i['Start X']],e[c_i['Start Y']]], [e[c_i['End X']],e[c_i['End Y']]]]
+                
+                    if len(locations)>0:
+                        try:
+                            event_obj.start_x, event_obj.start_y = SpatialSoccer.proportion_coordinates_to_statsbomb(float(locations[0][0]),float(locations[0][1]))
+                        except:
+                            event_obj.start_x = None
+                            event_obj.start_y = None
+
+                        if len(locations)>1:
+                            try:
+                                event_obj.end_x, event_obj.end_y = SpatialSoccer.proportion_coordinates_to_statsbomb(float(locations[1][0]),float(locations[1][1]))
+                            except:
+                                event_obj.end_x = None
+                                event_obj.end_y = None
+                        else:
+                            event_obj.end_x = None
+                            event_obj.end_y = None
+                    else:
+                        event_obj.start_x = None
+                        event_obj.start_y = None
+                    
+
+                    event_obj.build_points()
+                    event_obj.timestamp = float(e[c_i["Start Time [s]"]])
+                    event_obj.event_time = self.convert_eventseconds(event_obj.timestamp,match_obj.match_date_time)
+                    event_obj.original_json = ",".join(e)
+                    match_obj.events.append(event_obj)
+                    idx +=1
+            match_df = pd.DataFrame(match_obj.build_dictionary_from_events())
+            match_gdf = gpd.GeoDataFrame(match_df,geometry=match_obj.build_point_geometry_list())
+            self.parse_time_by_period(match_gdf)
+            del match_df
+            #self.detect_wyscout_basic_possession(match_gdf)
+            return match_gdf
+            
+        return None  
 
     def detect_wyscout_basic_possession(self,gdf):
         """Identify unique possession segments"""
@@ -341,7 +456,67 @@ class SpatialSoccer(object):
 
         return None
 
+    def load_metrica_tracking(self,path_to_tracks,ignore_ball = False):
+        """Loads csv file of tracking data
+        returns geodataframe
+        """
+        
+        outdata = []
+        outcolumns = ["team","period","frame","x_coord","y_coord","time","point","playerid"]
+        
+        with open(path_to_tracks, "r",encoding='utf-8',newline='') as read_file:
+            reader = csv.reader(read_file)
+            init = 0
+            current_team = ""
+            player_jerseys = []
+            column_names = ["Period","Frame","Time [s]"]
+            player_columns = []
 
+            for t in reader:
+                if init == 0:
+                    #row 1
+                    for x in t:
+                        if x != "":
+                            current_team = x
+                            break
+                    init+= 1
+                elif init == 1:
+                    #row 2
+                    for x in t:
+                        if x != "":
+                            player_jerseys.append(x)
+                    for jn in player_jerseys:
+                        player_columns.append("Player_{0}_x".format(jn))
+                        player_columns.append("Player_{0}_y".format(jn))
+                    if ignore_ball == False:
+                        player_columns.append("Ball_x")
+                        player_columns.append("Ball_y")
+                    #print(player_columns)
+                    init+= 1
+                elif init == 2:
+                    #row 3
+                    init+= 1
+                else:
+                    #rest of data
+                    #outvector [period,frame,x,y,z,point,playerid]
+                    period = int(t[0])
+                    frame = int(t[1])
+                    z = float(t[2])
+                    
+                    for i in range(3,len(player_columns)+3,2):
+                        
+                        try:
+                            x,y = SpatialSoccer.proportion_coordinates_to_statsbomb(float(t[i]),float(t[i+1]))
+                            p = Point(x,y,z)
+                        except:
+                            x = None
+                            y = None
+                            p = None
+                        outdata.append([current_team,period,frame,x,y,z,p,player_columns[i-3].replace("_x","")])
+        df = pd.DataFrame(outdata,columns=outcolumns)
+        gdf = gpd.GeoDataFrame(df,geometry=df["point"])
+        del df
+        return gdf
 
     def parse_time_by_period(self,df):
         """Parse the timestamp of events using the base match kick_off time
@@ -385,6 +560,15 @@ class SpatialSoccer(object):
         y_coord = (mxy - mny) * (percent_y/100.0)
         y_coord = SpatialSoccer.flip_coordinate_min_max(y_coord,mny,mxy)
         return (x_coord,y_coord)
+    
+    @staticmethod
+    def proportion_coordinates_to_statsbomb(prop_x,prop_y, mnx=0,mxx=120,mny=0,mxy=80,flip_y = True):
+        """WYSCOUT uses the position as the percentage from the left corner of the attacking team"""
+        x_coord = (mxx - mnx) * (prop_x)
+        y_coord = (mxy - mny) * (prop_y)
+        y_coord = SpatialSoccer.flip_coordinate_min_max(y_coord,mny,mxy)
+        return (x_coord,y_coord)
+
     @staticmethod
     def flip_coordinates(list_of_values,mx=None,mn=None):
         """Takes a list of numeric values and flips them based on the max and min
