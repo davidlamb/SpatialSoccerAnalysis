@@ -68,33 +68,16 @@ You may need to visit the video below if it does not appear: [https://youtu.be/1
 
 
 
-
-
-
-<iframe
-    width="560"
-    height="315"
-    src="https://youtu.be/1bE6rjf_9MY?t=155"
-    frameborder="0"
-    allowfullscreen
-></iframe>
-
-
-
+[https://youtu.be/1bE6rjf_9MY?t=155](https://youtu.be/1bE6rjf_9MY?t=155)
 
 The play below demonstrates a pass made across the field from Trent Alexander-Arnold to Sadio Mane. This pass was placed in area of the pitch that was largely under control of Everton before it left Alexander-Arnold's foot.
 
+[https://www.youtube.com/embed/UnsL_LbxEdI](https://www.youtube.com/embed/UnsL_LbxEdI)
 
-
-<iframe width="560" height="315" src="https://www.youtube.com/embed/UnsL_LbxEdI" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
 
 
 In the figure below presents pitch control from the point of the pass start, and represent areas that Alexander-Arnold could pass to and which player would most likely reach the ball first. The darker areas are locations that a Liverpool player was more likely to reach. The triangle represents the final location of the pass event, this area at the start of the pass was under the control of Everton. Alexander-Arnold had the confidence Sadio Mane would be able to reach the point faster than anyone else.
 
-
-```python
-Image("everton_pitchcontrol_2ndpass.png")
-```
 
 
 
@@ -106,9 +89,6 @@ Image("everton_pitchcontrol_2ndpass.png")
 If we assume a constant velocity of 5 meters per second, these potential path areas (ellipses) demonstrate the areas that could be reached from the player's position at the beginning of the pass event. There is at least one Liverpool player (Mane) and one Everton player that could have reached the ball by the time it landed. Possibly a Second Everton player. None of their ellipses touch the final position, so they would have had to have sped up to reach it in time.
 
 
-```python
-Image("everton_pitchcontrol_2ndpass_ellipse.png")
-```
 
 
 
