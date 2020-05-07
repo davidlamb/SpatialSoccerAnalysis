@@ -6,10 +6,12 @@ import numpy as np
 from shapely.geometry.point import Point
 from shapely.geometry import LineString
 from shapely.geometry import Polygon
+from shapely import affinity
 from dateutil.parser import parse
 from datetime import datetime
 from datetime import timedelta
 import csv
+import string
 
 class SpatialSoccer(object):
     __version__ = 0
@@ -204,6 +206,7 @@ class SpatialSoccer(object):
             current_events = json.load(read_file)
             
         if current_events:
+            match_obj.events = []
             for e in current_events:
                 event_obj = event(e["id"])
                 event_obj.period = e["period"]
@@ -291,6 +294,7 @@ class SpatialSoccer(object):
             current_events = json.load(read_file)
             
         if current_events:
+            match_obj.events = []
             for e in current_events:
                 if e["matchId"] == match_obj.match_id:
                     event_obj = event(e["id"])
@@ -361,6 +365,7 @@ class SpatialSoccer(object):
             reader = csv.reader(read_file)
             idx = 1000
             init = 0
+            match_obj.events = []
             for e in reader:
                 if init == 0:
                     init+=1
@@ -372,6 +377,8 @@ class SpatialSoccer(object):
                     event_obj.possession_id = None
                     event_obj.possession_team_name = None
                     event_obj.event_team_name = e[c_i['Team']]
+                    #EVENT_NUMERIC_PROPERTY_LIST = ["start_x","start_y","end_x","end_y","is_goal","period","match_id","xg"]
+                    event_obj.add_numeric_attributes(["end_time","start_frame","end_frame"])
                     try:
                         event_obj.event_player = e[c_i['From']]
                     except:
@@ -414,11 +421,17 @@ class SpatialSoccer(object):
                     event_obj.build_points()
                     event_obj.timestamp = float(e[c_i["Start Time [s]"]])
                     event_obj.event_time = self.convert_eventseconds(event_obj.timestamp,match_obj.match_date_time)
+                    event_obj.end_time = float(e[c_i["End Time [s]"]])
+                    event_obj.start_frame = int(e[c_i["Start Frame"]])
+                    event_obj.end_frame = int(e[c_i["End Frame"]])
                     event_obj.original_json = ",".join(e)
                     match_obj.events.append(event_obj)
                     idx +=1
+            print(len(match_obj.events))
             match_df = pd.DataFrame(match_obj.build_dictionary_from_events())
+            print(len(match_df))
             match_gdf = gpd.GeoDataFrame(match_df,geometry=match_obj.build_point_geometry_list())
+            print(len(match_gdf))
             self.parse_time_by_period(match_gdf)
             del match_df
             #self.detect_wyscout_basic_possession(match_gdf)
@@ -482,9 +495,11 @@ class SpatialSoccer(object):
                     init+= 1
                 elif init == 1:
                     #row 2
+                    #print(t)
                     for x in t:
                         if x != "":
                             player_jerseys.append(x)
+                    #print(player_jerseys)
                     for jn in player_jerseys:
                         player_columns.append("Player_{0}_x".format(jn))
                         player_columns.append("Player_{0}_y".format(jn))
@@ -558,7 +573,8 @@ class SpatialSoccer(object):
         """WYSCOUT uses the position as the percentage from the left corner of the attacking team"""
         x_coord = (mxx - mnx) * (percent_x/100.0)
         y_coord = (mxy - mny) * (percent_y/100.0)
-        y_coord = SpatialSoccer.flip_coordinate_min_max(y_coord,mny,mxy)
+        if flip_y:
+            y_coord = SpatialSoccer.flip_coordinate_min_max(y_coord,mny,mxy)
         return (x_coord,y_coord)
     
     @staticmethod
@@ -566,7 +582,8 @@ class SpatialSoccer(object):
         """WYSCOUT uses the position as the percentage from the left corner of the attacking team"""
         x_coord = (mxx - mnx) * (prop_x)
         y_coord = (mxy - mny) * (prop_y)
-        y_coord = SpatialSoccer.flip_coordinate_min_max(y_coord,mny,mxy)
+        if flip_y:
+            y_coord = SpatialSoccer.flip_coordinate_min_max(y_coord,mny,mxy)
         return (x_coord,y_coord)
 
     @staticmethod
@@ -649,6 +666,35 @@ class SpatialSoccer(object):
                Polygon(left_goal_box),Point(center)]
         pitchgdf = gpd.GeoDataFrame(df_dict,geometry=geometry)
         return pitchgdf
+
+    @staticmethod
+    def build_18zones_statsbomb_dim():
+        alpha = list(string.ascii_lowercase)
+        x_gap = 20
+        zones = {"zone":[],"zone_lbl":[],"zone_geometry":[]}
+        zone_i = 1
+        for i in range(0,120,20):
+            for j in range(0,3):
+                if j == 0:
+                    zn = Polygon([(i,80),(i+20,80),(i+20,80-18),(i,80-18),(i,80)])
+                    zones['zone'].append(zone_i)
+                    zones['zone_lbl'].append(alpha[zone_i-1])
+                    zones['zone_geometry'].append(zn)
+                    zone_i+=1
+                if j == 1:
+                    zn = Polygon([(i,80-18),(i+20,80-18),(i+20,80-62),(i,80-62),(i,80-18)])
+                    zones['zone'].append(zone_i)
+                    zones['zone_lbl'].append(alpha[zone_i-1])
+                    zones['zone_geometry'].append(zn)
+                    zone_i+=1
+                if j == 2:
+                    zn = Polygon([(i,80-62),(i+20,80-62),(i+20,0),(i,0),(i,80-62)])
+                    zones['zone'].append(zone_i)
+                    zones['zone_lbl'].append(alpha[zone_i-1])
+                    zones['zone_geometry'].append(zn)
+                    zone_i+=1
+        zngdf = gpd.GeoDataFrame(zones,geometry=zones['zone_geometry'])
+        return zngdf
 
     @staticmethod
     def bearing(pt1,pt2):
@@ -734,6 +780,99 @@ class SpatialSoccer(object):
                 
         gdf = gpd.GeoDataFrame({"cell":ids,"centroid":cent,"x_coord":xcoords,"y_coord":ycoords,"time":zcoords},geometry=geom)
         return gdf
+    
+    @staticmethod
+    def player_velocities(gdf,player_id_field,point_field,time_field,maxspeed=12,smooth=True,window=7):
+        unique_players = gdf[player_id_field].unique()
+        gdf['vx'] = np.zeros(len(gdf))
+        gdf['vy'] = np.zeros(len(gdf))
+        gdf['xc'] = gdf[point_field].apply(lambda x: x.x)
+        gdf['yc'] = gdf[point_field].apply(lambda x: x.y)
+        gdf['dt'] = gdf[time_field].diff()
+        gdf['velocity'] = np.zeros(len(gdf))
+        for p in unique_players:
+            gdf.loc[gdf[player_id_field]==p,'dt'] = gdf[gdf[player_id_field]==p][time_field].diff()
+            gdf.loc[gdf[player_id_field]==p,'vx'] = gdf[gdf[player_id_field]==p]['xc'].diff()/ gdf[gdf[player_id_field]==p]['dt']
+            gdf.loc[gdf[player_id_field]==p,'vy'] = gdf[gdf[player_id_field]==p]['yc'].diff()/ gdf[gdf[player_id_field]==p]['dt']
+            if maxspeed>0:
+                # remove unsmoothed data points that exceed the maximum speed (these are most likely position errors)
+                raw_speed = np.sqrt( gdf['vx']*gdf['vx'] + gdf['vy']*gdf['vy'] )
+                try:
+                    gdf.loc[raw_speed>maxspeed,'vx'] = np.nan
+                    gdf.loc[raw_speed>maxspeed,'vy'] = np.nan
+                except:
+                    pass
+            if smooth:
+                gdf.loc[gdf[player_id_field]==p,'vx'] = gdf[gdf[player_id_field]==p]['vx'].rolling(7,min_periods=1).mean()
+                gdf.loc[gdf[player_id_field]==p,'vy'] = gdf[gdf[player_id_field]==p]['vy'].rolling(7,min_periods=1).mean()
+            gdf.loc[gdf[player_id_field]==p,'velocity'] = np.sqrt(np.square(gdf[gdf[player_id_field]==p]['vx']) + np.square(gdf[gdf[player_id_field]==p]['vy']))
+        gdf['vx'].fillna(0,inplace=True)
+        gdf['vy'].fillna(0,inplace=True)
+        gdf['velocity'].fillna(0,inplace=True)
+        gdf['dt'].fillna(0,inplace=True)
+    
+    @staticmethod
+    def pitch_control_at_target(target_point,ball_point,player_attack_df,player_defense_df, point_field, velocity_field, reaction_field, ball_velocity=15):
+
+        source = "https://github.com/Friends-of-Tracking-Data-FoTD/LaurieOnTracking"
+        #reaction_point_a = player_attack_df[[point_field, velocity_field, reaction_field]].apply(lambda x: x.interpolate)
+        #reaction_point_d = player_defense_df[[point_field, velocity_field, reaction_field]].apply(lambda x: Point(x[0].x + x[1]*x[2],x[0].y+ x[1]*x[2]))
+        kappa_def =  1. # kappa parameter in Spearman 2018 (=1.72 in the paper) that gives the advantage defending players to control ball, I have set to 1 so that home & away players have same ball control probability
+        lambda_att = 4.3 # ball control parameter for attacking team
+        lambda_def = 4.3 * kappa_def # ball control parameter for defending team
+        time_to_control_veto = 3
+        int_dt = 0.04
+        tti_sigma = .45
+        max_int_time = 10 
+        model_converge_tol = 0.01
+        time_to_control_a = time_to_control_veto*np.log(10) * (np.sqrt(3)*tti_sigma/np.pi + 1/lambda_att)
+        time_to_control_d = time_to_control_veto*np.log(10) * (np.sqrt(3)*tti_sigma/np.pi + 1/lambda_def)
+
+        time_to_intercept_a = player_attack_df[[point_field, velocity_field, reaction_field]].apply(lambda x: x[2] + x[0].distance(target_point) / x[1], axis=1)
+        time_to_intercept_d = player_defense_df[[point_field, velocity_field, reaction_field]].apply(lambda x: x[2] + x[0].distance(target_point) / x[1], axis=1)
+        ball_travel_time = target_point.distance(ball_point) / ball_velocity
+        tau_min_a = np.nanmin(time_to_intercept_a)
+        tau_min_d = np.nanmin(time_to_intercept_d)
+        
+        if tau_min_a-max(ball_travel_time,tau_min_d) >= time_to_control_d:
+            # if defending team can arrive significantly before attacking team, no need to solve pitch control model
+            return 0., 1.
+        elif tau_min_d-max(ball_travel_time,tau_min_a) >= time_to_control_a:
+            # if attacking team can arrive significantly before defending team, no need to solve pitch control model
+            return 1., 0.
+        else: 
+            attacking_players = time_to_intercept_a[(time_to_intercept_a-tau_min_a)<time_to_control_a]
+            defending_players = time_to_intercept_d[(time_to_intercept_d-tau_min_d)<time_to_control_d]
+            attack_ppcf = np.zeros(len(attacking_players))
+            defend_ppcf = np.zeros(len(defending_players))
+            # set up integration arrays
+            dT_array = np.arange(ball_travel_time-int_dt,ball_travel_time+max_int_time,int_dt) 
+            PPCFatt = np.zeros_like( dT_array )
+            PPCFdef = np.zeros_like( dT_array )
+            # integration equation 3 of Spearman 2018 until convergence or tolerance limit hit (see 'params')
+            ptot = 0.0
+            i = 1
+            while 1-ptot>model_converge_tol and i<dT_array.size: 
+                T = dT_array[i]
+                #f = 1/(1. + np.exp( -np.pi/np.sqrt(3.0)/self.tti_sigma * (T-self.time_to_intercept) ) )
+                prob_a = 1/(1. + np.exp( -np.pi/np.sqrt(3.0)/tti_sigma * (T-attacking_players) ) )
+                dPPCFdT = (1-PPCFatt[i-1]-PPCFdef[i-1])*prob_a * lambda_att
+                attack_ppcf+=(dPPCFdT * int_dt)
+                PPCFatt[i] += attack_ppcf.sum()
+                prob_d = 1/(1. + np.exp( -np.pi/np.sqrt(3.0)/tti_sigma * (T-defending_players) ) )
+                dPPCFdT = (1-PPCFatt[i-1]-PPCFdef[i-1])*prob_d * lambda_def
+                defend_ppcf+=(dPPCFdT * int_dt)
+                PPCFdef[i] += defend_ppcf.sum()
+                
+                ptot = PPCFdef[i]+PPCFatt[i] # total pitch control probability 
+                i += 1
+        if i>=dT_array.size:
+            print("Integration failed to converge: %1.3f" % (ptot) )
+        return PPCFatt[i-1], PPCFdef[i-1]
+        
+                        
+
+
 
     @staticmethod
     def adhoc_bandwidth(event_points):
@@ -761,7 +900,7 @@ class SpatialSoccer(object):
         return densities
 
     @staticmethod
-    def space_time_kernel_density(st_cell_points,event_points, bandwidth, bandwidth_time):
+    def space_time_kernel_density(cell_pnts,event_points, bandwidth, bandwidth_time):
         """Returns the space-time densities
         st_cell_points: numpy array of cell points x,y,z (z is time in seconds)
         event_points: numpy array of event points x,y,z (z is time in seconds)
@@ -777,13 +916,13 @@ class SpatialSoccer(object):
                 u = dist[dist<bandwidth] / bandwidth
                 u_t = dist_t[dist_t<bandwidth_time] / bandwidth_time
                 den_s = np.piecewise(u, [u <= 1.0,u > 1.0],[lambda u:(15.0/16.0) * (np.power((1-np.power(u,2)),2)),lambda u: 0.0])
-                den_t = np.piecewise(u, [u_t <= 1.0,u_t > 1.0],[lambda u:(15.0/16.0) * (np.power((1-np.power(u,2)),2)),lambda u: 0.0])
+                den_t = np.piecewise(u_t, [u_t <= 1.0,u_t > 1.0],[lambda u:(15.0/16.0) * (np.power((1-np.power(u,2)),2)),lambda u: 0.0])
                 den = np.sum(den_s*den_t)
                 den = 1/(len(event_points)*bandwidth*bandwidth*bandwidth_time)*den
                 densities.append(den)
             else:
                 densities.append(0)
-
+        return densities
 
     @staticmethod
     def build_square_polygon(x,y,d):
@@ -969,3 +1108,9 @@ class event(object):
             self.end_point = Point(self.end_x,self.end_y)
         except:
             self.end_point = None
+    
+    def add_numeric_attributes(self,attributes=None):
+        if attributes:
+            for a in attributes:
+                setattr(self, a, None)
+                self.EVENT_NUMERIC_PROPERTY_LIST.append(a)
