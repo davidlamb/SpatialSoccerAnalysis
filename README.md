@@ -3,6 +3,19 @@
  
  These examples are provided as is with miminal support, although feedback and comments are welcome. These are basic examples and don't break down the match events in every possible way. They are meant to be a stepping stone to deeper analysis.
  
+ Recent Projects:
+ 
+ [Alternatives to Visualizing Pass Maps](8_VisualizingPassNetworks.md)
+  - In this project I present some alternatives to the flow map style passing network visuals, including sankey diagrams and heat maps.
+  
+ [Inferring player locations from event data](9_InferringLocationFromEventData.md)
+  - This project explores using a Potential Path Areas (a common tool from Time Geography) to understand where a player was in the field during an event. In other words, inferring a player's location prior to the event given their speed and a time interval.
+  
+[Liverpool analysis](https://sway.office.com/qdoMnxyovDmEt3hx?ref=Link)
+ - Migrated my my basic liverpool analysis to more of a data story. Experimenting with different ways of communicating data.
+ 
+ Old Projects:
+ 
 [Project 1](1_BuildPitch.md)
   - In this project I look at creating the pitch based on the coordinates provided in StatsBomb's documentation. This creates the first geopandas dataframe. I also begin to look at how to interpret location and the problems I encountered from a cartesian coordinate \ geographic perspective. This does not mean problems with the data itself.
   
