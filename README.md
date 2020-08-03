@@ -37,6 +37,11 @@
 [Change of direction](_RevisedSpatialSoccerLibrary.md)
 - I hit the limit of my working ssalib python library pretty quickly. I wanted to also work with wyscout data, and the way I set up the original library wasn't well tailored to working across different data sources. Now, I have ssalib2 that abstracts some of the importing to classes for matches and events. I leave ssalib there to work with the older previous projects.
 
+## Visualizations
+
+- [Interactive visualizations](https://public.tableau.com/profile/ssalib2#!/). Mostly Fantasy Premier League data...
+- [Data stories](https://sway.office.com/qdoMnxyovDmEt3hx?ref=Link)
+
 ## Fantasy Premier League
 - [Developing a value model for players 19/20 Season](FPL_CostModel.md)
 - [Looking at some alternative metrics](FPL_CostModelPartII.md)
