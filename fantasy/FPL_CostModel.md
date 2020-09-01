@@ -566,7 +566,7 @@ ax.set_title("Cost");
 ```
 
 
-![png](images/fpl/1output_10_0.png)
+![png](images/fpl/1/output_10_0.png)
 
 
 Most ofthe data is actually skewed. Red cards and yellow cards don't look to be that useful given their unbalanced in favor of no cards.
@@ -580,31 +580,31 @@ for x in x_fields:
 ```
 
 
-![png](images/fpl/1output_12_0.png)
+![png](images/fpl/1/output_12_0.png)
 
 
 
-![png](images/fpl/1output_12_1.png)
+![png](images/fpl/1/output_12_1.png)
 
 
 
-![png](images/fpl/1output_12_2.png)
+![png](images/fpl/1/output_12_2.png)
 
 
 
-![png](images/fpl/1output_12_3.png)
+![png](images/fpl/1/output_12_3.png)
 
 
 
-![png](images/fpl/1output_12_4.png)
+![png](images/fpl/1/output_12_4.png)
 
 
 
-![png](images/fpl/1output_12_5.png)
+![png](images/fpl/1/output_12_5.png)
 
 
 
-![png](images/fpl/1output_12_6.png)
+![png](images/fpl/1/output_12_6.png)
 
 
 
@@ -623,7 +623,7 @@ for x in x_fields:
 
 
 
-![png](images/fpl/1output_12_8.png)
+![png](images/fpl/1/output_12_8.png)
 
 
 I'll set up some transformations on a few of the variables. You might use these, but I didn't find them to be necessary in the fit of the model.
@@ -644,35 +644,35 @@ plt.show()
 ```
 
 
-![png](images/fpl/1output_14_0.png)
+![png](images/fpl/1/output_14_0.png)
 
 
 
-![png](images/fpl/1output_14_1.png)
+![png](images/fpl/1/output_14_1.png)
 
 
 
-![png](images/fpl/1output_14_2.png)
+![png](images/fpl/1/output_14_2.png)
 
 
 
-![png](images/fpl/1output_14_3.png)
+![png](images/fpl/1/output_14_3.png)
 
 
 
-![png](images/fpl/1output_14_4.png)
+![png](images/fpl/1/output_14_4.png)
 
 
 
-![png](images/fpl/1output_14_5.png)
+![png](images/fpl/1/output_14_5.png)
 
 
 
-![png](images/fpl/1output_14_6.png)
+![png](images/fpl/1/output_14_6.png)
 
 
 
-![png](images/fpl/1output_14_7.png)
+![png](images/fpl/1/output_14_7.png)
 
 
 I'll also center the numeric variables for interprative reasons.
@@ -749,7 +749,7 @@ sns.distplot(results.resid);
     
 
 
-![png](images/fpl/1output_21_1.png)
+![png](images/fpl/1/output_21_1.png)
 
 
 
@@ -760,12 +760,12 @@ sm.graphics.qqplot(results.resid)
 
 
 
-![png](images/fpl/1output_22_0.png)
+![png](images/fpl/1/output_22_0.png)
 
 
 
 
-![png](images/fpl/1output_22_1.png)
+![png](images/fpl/1/output_22_1.png)
 
 
 I think we have a little heteroskedasticity here. It seems like the points are spreading out a little bit from left to right. Although, it isn't terrible.
@@ -776,7 +776,7 @@ sns.scatterplot(x=results.fittedvalues,y=results.resid_pearson);
 ```
 
 
-![png](images/fpl/1output_24_0.png)
+![png](images/fpl/1/output_24_0.png)
 
 
 The outliers are clearly affecting the results of the model, but can we really get rid of these players? It isn't surprising that these are going to have influence in the model. De Bruyne had a career season in 2019-2020 so it shouldn't be surprising he is an outlier. 
@@ -788,7 +788,7 @@ fig = sm.graphics.influence_plot(results, ax=ax, criterion="cooks")
 ```
 
 
-![png](images/fpl/1output_26_0.png)
+![png](images/fpl/1/output_26_0.png)
 
 
 
@@ -858,7 +858,7 @@ g = sns.pairplot(df_copy[x_trans])
 ```
 
 
-![png](images/fpl/1output_29_0.png)
+![png](images/fpl/1/output_29_0.png)
 
 
 
@@ -867,7 +867,7 @@ sns.scatterplot(x=df_copy['minutes'],y=df_copy['now_cost']);
 ```
 
 
-![png](images/fpl/1output_30_0.png)
+![png](images/fpl/1/output_30_0.png)
 
 
 Two other things to consider is using the transformed variables for response and predictors.
@@ -929,7 +929,7 @@ sns.distplot(results.resid);
     
 
 
-![png](images/fpl/1output_33_2.png)
+![png](images/fpl/1/output_33_2.png)
 
 
 Transforming does not change things too much. So we might need to decide if we are okay with how the residuals look. There are some problems, and I suspect they are caused by the outliers. I don't really want to remove the outliers because they tend to be the top players.
@@ -941,11 +941,11 @@ sm.graphics.qqplot(results.resid);
 ```
 
 
-![png](images/fpl/1output_35_0.png)
+![png](images/fpl/1/output_35_0.png)
 
 
 
-![png](images/fpl/1output_35_1.png)
+![png](images/fpl/1/output_35_1.png)
 
 
 
@@ -955,7 +955,7 @@ fig = sm.graphics.influence_plot(results, ax=ax, criterion="cooks")
 ```
 
 
-![png](images/fpl/1output_36_0.png)
+![png](images/fpl/1/output_36_0.png)
 
 
 Transforming also lowers the R-Squared, especially when we transform all the variables.
@@ -1014,11 +1014,11 @@ sm.graphics.qqplot(results.resid);
 ```
 
 
-![png](images/fpl/1output_40_0.png)
+![png](images/fpl/1/output_40_0.png)
 
 
 
-![png](images/fpl/1output_40_1.png)
+![png](images/fpl/1/output_40_1.png)
 
 
 Let's see how things look when we center the variables, and add in some interaction terms between the points and indices.
@@ -1076,7 +1076,7 @@ sns.distplot(results.resid);
     
 
 
-![png](images/fpl/1output_42_2.png)
+![png](images/fpl/1/output_42_2.png)
 
 
 
@@ -1086,11 +1086,11 @@ sm.graphics.qqplot(results.resid);
 ```
 
 
-![png](images/fpl/1output_43_0.png)
+![png](images/fpl/1/output_43_0.png)
 
 
 
-![png](images/fpl/1output_43_1.png)
+![png](images/fpl/1/output_43_1.png)
 
 
 I'll leave in the transformed dependent variable, because I think it helps a little with the residual constant variance assumption.
@@ -1291,7 +1291,7 @@ undervalued.hist("now_cost",by="element_type");
 ```
 
 
-![png](images/fpl/1output_50_0.png)
+![png](images/fpl/1/output_50_0.png)
 
 
 
@@ -1300,7 +1300,7 @@ undervalued.hist("points_per_game",by="element_type");
 ```
 
 
-![png](images/fpl/1output_51_0.png)
+![png](images/fpl/1/output_51_0.png)
 
 
 We can filter by cost to get a sense of what players we might want within a certain price range, or by the points per game. Here we see "Thomas" (there are more than one, so we would need to delve deeper into which Thomas) is undervalued by almost a 1 million pounds, and gets 5 points per game. Not a bad pick for that price.

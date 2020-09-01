@@ -1674,7 +1674,7 @@ finaldf['PointsPerValue'].hist()
 
 
 
-![png](images/fpl/2output_10_1.png)
+![png](images/fpl/2/output_10_1.png)
 
 
 Save the data for easy replication.
@@ -2203,7 +2203,7 @@ sns.distplot(results.resid);
     
 
 
-![png](images/fpl/2output_22_1.png)
+![png](images/fpl/2/output_22_1.png)
 
 
 
@@ -2214,12 +2214,12 @@ sm.graphics.qqplot(results.resid)
 
 
 
-![png](images/fpl/2output_23_0.png)
+![png](images/fpl/2/output_23_0.png)
 
 
 
 
-![png](images/fpl/2output_23_1.png)
+![png](images/fpl/2/output_23_1.png)
 
 
 
@@ -2228,7 +2228,7 @@ sns.scatterplot(x=results.fittedvalues,y=results.resid_pearson);
 ```
 
 
-![png](images/fpl/2output_24_0.png)
+![png](images/fpl/2/output_24_0.png)
 
 
 
@@ -2238,7 +2238,7 @@ fig = sm.graphics.influence_plot(results, ax=ax, criterion="cooks")
 ```
 
 
-![png](images/fpl/2output_25_0.png)
+![png](images/fpl/2/output_25_0.png)
 
 
 
@@ -2257,7 +2257,7 @@ sns.distplot(results.resid);
     
 
 
-![png](images/fpl/2output_27_1.png)
+![png](images/fpl/2/output_27_1.png)
 
 
 
@@ -2268,12 +2268,12 @@ sm.graphics.qqplot(results.resid)
 
 
 
-![png](images/fpl/2output_28_0.png)
+![png](images/fpl/2/output_28_0.png)
 
 
 
 
-![png](images/fpl/2output_28_1.png)
+![png](images/fpl/2/output_28_1.png)
 
 
 
@@ -2282,7 +2282,7 @@ sns.scatterplot(x=results.fittedvalues,y=results.resid_pearson);
 ```
 
 
-![png](images/fpl/2output_29_0.png)
+![png](images/fpl/2/output_29_0.png)
 
 
 
@@ -2339,7 +2339,7 @@ for idx,row in undervalued.iterrows():
 ```
 
 
-![png](images/fpl/2output_32_0.png)
+![png](images/fpl/2/output_32_0.png)
 
 
 
