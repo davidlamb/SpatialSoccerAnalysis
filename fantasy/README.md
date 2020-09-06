@@ -8,6 +8,8 @@
 - [Using a factor analysis to match the Fantasy Premier Leagues ICT index with the Bundesliga](Bundesliga ICT.md)
 
 
+[Using a factor analysis to match the Fantasy Premier Leagues ICT index with the Bundesliga](FPL_LinkingData.md)
+
 ## Bundesliga Models
 
 
