@@ -5,6 +5,10 @@
 - [Developing a value model for players 19/20 Season](FPL_CostModel.md)
 - [Looking at some alternative metrics](FPL_CostModelPartII.md)
 - [Matching player names using edit distance to compare strings](FPL_LinkingData.md)
+- [Using a factor analysis to match the Fantasy Premier Leagues ICT index with the Bundesliga](Bundesliga ICT.md)
+
+
+[Using a factor analysis to match the Fantasy Premier Leagues ICT index with the Bundesliga](FPL_LinkingData.md)
 
 ## Bundesliga Models
 
