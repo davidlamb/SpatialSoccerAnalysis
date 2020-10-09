@@ -14,6 +14,9 @@
 [Liverpool analysis](https://sway.office.com/qdoMnxyovDmEt3hx?ref=Link)
  - Migrated my my basic liverpool analysis to more of a data story. Experimenting with different ways of communicating data.
  
+ [SkillCorner Tracking data](_SkillCornerData.md)
+ - Added loading tracking data to the ssalib2.
+ 
  Old Projects:
  
 [Project 1](1_BuildPitch.md)
@@ -36,7 +39,6 @@
  
 [Change of direction](_RevisedSpatialSoccerLibrary.md)
 - I hit the limit of my working ssalib python library pretty quickly. I wanted to also work with wyscout data, and the way I set up the original library wasn't well tailored to working across different data sources. Now, I have ssalib2 that abstracts some of the importing to classes for matches and events. I leave ssalib there to work with the older previous projects.
-
 
 
 ## Location
