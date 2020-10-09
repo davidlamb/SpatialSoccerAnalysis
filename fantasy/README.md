@@ -6,6 +6,7 @@
 - [Looking at some alternative metrics](FPL_CostModelPartII.md)
 - [Matching player names using edit distance to compare strings](FPL_LinkingData.md)
 - [Using a factor analysis to match the Fantasy Premier Leagues ICT index with the Bundesliga](Bundesliga_ICT.md)
+- [Trying to predict how many points a player will earn in the Premier League](FPL_PointPredictor.md)
 
 ## Bundesliga Models
 
