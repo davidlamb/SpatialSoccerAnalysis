@@ -35,6 +35,13 @@ class SpatialSoccer(object):
     STATS_BOMB_DATA = 1
     WYSCOUT_DATA = 2
     METRICA_DATA = 3
+    SKILLCORNER_DATA = 4
+    NFL_DATA = 5
+    TEAM_AWAY = "Away Team"
+    TEAM_HOME = "Home Team"
+    TYPE_PLAYER = "Player"
+    TYPE_REF = "Referee"
+    TYPE_BALL = "Ball"
     def __init__(self):
         self.parse_time = True
         self.add_type = True
@@ -89,6 +96,10 @@ class SpatialSoccer(object):
             return self.get_matches_wyscout(path_to_matches,team_name)
         if data_source == self.METRICA_DATA:
             return self.get_matches_metrica(path_to_matches,team_name)
+        if data_source == self.SKILLCORNER_DATA:
+            return self.get_matches_skillcorner(path_to_matches,team_name)
+        if data_source == self.NFL_DATA:
+            return self.get_matches_nfl(path_to_matches,team_name)
         return None
     
     def get_matches_statsbomb(self,path_to_matches,team_name=None):
@@ -145,6 +156,32 @@ class SpatialSoccer(object):
                     if m['match_id']:
                         matches.append(mt)
         return matches
+
+    def get_matches_nfl(self,path_to_matches,team_name=None):
+        matches = []
+        in_matches = pd.read_csv(path_to_matches, encoding ='utf-8')
+        for idx,m in in_matches.iterrows():
+            mt = match(m['gameId'])
+            mt.home_team_id = m['homeTeamAbbr']
+            mt.home_team_name = m['homeTeamAbbr']
+            mt.home_team_score = 0
+            mt.away_team_id = m['visitorTeamAbbr']
+            mt.away_team_name = m['visitorTeamAbbr']
+            mt.away_team_score = 0
+            datetimestr = "{0} {1}".format(m['gameDate'],m['gameTimeEastern'])
+            mt.match_date_time = parse(datetimestr)
+            mt.week = m['week']
+            if team_name:
+                if mt.home_team_name == team_name:
+                    matches.append(mt)
+                elif mt.away_team_name == team_name:
+                    matches.append(mt)
+                else:
+                    pass
+            else:
+                if m['gameId']:
+                    matches.append(mt)
+        return matches
         
     def get_matches_wyscout(self,path_to_matches,team_name=None):
         matches = []
@@ -165,7 +202,29 @@ class SpatialSoccer(object):
                     mt.away_team_id = int(k)
                     mt.away_team_name = k
                     mt.away_team_score = v['score']
-            
+                for vj in v['formation']['bench']:
+                    hp = player()
+                    hp.player_id = vj['playerId']
+                    hp.own_goals = vj['ownGoals']
+                    hp.red_cards = vj['redCards']
+                    hp.yellow_cards = vj['yellowCards']
+                    hp.goals = vj['goals']
+                    if v['side'] == 'home' or v['side']=='none':
+                        mt.home_players.append(hp)
+                    else:
+                        mt.away_players.append(hp)
+                for vj in v['formation']['lineup']:
+                    hp = player()
+                    hp.lineup = 1
+                    hp.player_id = vj['playerId']
+                    hp.own_goals = vj['ownGoals']
+                    hp.red_cards = vj['redCards']
+                    hp.yellow_cards = vj['yellowCards']
+                    hp.goals = vj['goals']
+                    if v['side'] == 'home' or v['side']=='none':
+                        mt.home_players.append(hp)
+                    else:
+                        mt.away_players.append(hp)                       
             if team_name:
                 if mt.home_team_name == team_name:
                     matches.append(mt)
@@ -176,6 +235,32 @@ class SpatialSoccer(object):
             else:
                 if mt.match_id:
                     matches.append(mt)
+        return matches
+
+    def get_matches_skillcorner(self,path_to_matches,team_name=None):
+        matches = []
+        with open(path_to_matches, "r",encoding='utf-8') as read_file:
+            in_matches = json.load(read_file)
+            
+            for m in in_matches:
+                mt = match(m['id'])
+                mt.home_team_id = m['home_team']['short_name']
+                mt.home_team_name = m['home_team']['short_name']
+                mt.home_team_score = -1
+                mt.away_team_id = m['away_team']['short_name']
+                mt.away_team_name = m['away_team']['short_name']
+                mt.away_team_score = -1
+                mt.match_date_time = parse(m['date_time'])
+                if team_name:
+                    if mt.home_team_name == team_name:
+                        matches.append(mt)
+                    elif mt.away_team_name == team_name:
+                        matches.append(mt)
+                    else:
+                        pass
+                else:
+                    if m['id']:
+                        matches.append(mt)
         return matches
 
     def load_events_from_match(self,path_to_events,data_source,match_obj):
@@ -190,6 +275,8 @@ class SpatialSoccer(object):
             return self.load_events_wyscout(path_to_events,match_obj)
         if data_source == self.METRICA_DATA:
             return self.load_events_metrica(path_to_events,match_obj)
+        if data_source == self.NFL_DATA:
+            return self.load_events_nfl(path_to_events,match_obj)
 
     def load_events_statsbomb(self,path_to_events,match_obj):
         """Loads a single match's events from a match. Provide either the matchid, or the index.
@@ -439,6 +526,67 @@ class SpatialSoccer(object):
             
         return None  
 
+    def load_events_nfl(self,path_to_events,match_obj):
+        """Loads a single match's events from a match. Provide either the matchid, or the index.
+        path_to_events: path to folder containing events for matches
+        match_obj: match object that contains information about the match
+        returns the geodataframe of match events. 
+        """
+        # TODO: Add exception handling.
+
+        
+        #path_to_events = path_to_events + '/week' + str(match_obj.week) + '.csv'
+        current_events = pd.read_csv(path_to_events,encoding='utf-8')
+
+        match_obj.events = []
+        for idx,e in current_events.iterrows():
+            if e["gameId"] == match_obj.match_id:
+                event_obj = event(e["playId"])
+                try:
+                    event_obj.period = e["quarter"]
+                except:
+                    event_obj.period = -1
+                try:
+                    event_obj.possession_id = e['down']
+                except:
+                    event_obj.possession_id = -1
+
+                try:
+                    event_obj.possession_team_name = e['possessionTeam']
+                except:
+                    event_obj.possession_team_name = -1
+                try:
+                    event_obj.event_team_name = e['possessionTeam']
+                except:
+                    event_obj.event_team_name = -1
+                try:
+                    event_obj.match_id = match_obj.match_id
+                except:
+                    event_obj.match_id = -1
+                try:
+                    event_obj.event_player = ""
+                except:
+                    pass
+                try:
+                    event_obj.event_name = e['playType']
+                except:
+                    event_obj.event_name = - 1
+                
+
+                event_obj.start_x = float(e['absoluteYardlineNumber'])+10.0
+                event_obj.start_y = 0.0
+                event_obj.end_x = float(e['absoluteYardlineNumber'])+10.0+float(e['playResult'])
+                event_obj.end_y = 0.0
+
+                    
+
+                event_obj.build_points()
+                event_obj.original_json = e.to_dict()
+                match_obj.events.append(event_obj)
+        match_df = pd.DataFrame(match_obj.build_dictionary_from_events())
+        match_gdf = gpd.GeoDataFrame(match_df,geometry=match_obj.build_point_geometry_list())
+        return match_gdf
+    
     def detect_wyscout_basic_possession(self,gdf):
         """Identify unique possession segments"""
         # TODO: review this
@@ -533,6 +681,110 @@ class SpatialSoccer(object):
         del df
         return gdf
 
+    def load_skillcorner_tracking(self,path_to_tracks,path_to_match_info,ignore_ball = False):
+        """Loads json file of tracking data
+        returns geodataframe
+        """
+        match_info = {}
+        home_away_info = {}
+        with open(path_to_match_info,"r",encoding='utf-8') as read_file:
+            match_json = json.load(read_file)
+            home_away_info[match_json['away_team']['id']] = {"Type":self.TEAM_AWAY,"short_name":match_json['away_team']['short_name']}
+            home_away_info[match_json['home_team']['id']] = {"Type":self.TEAM_HOME,"short_name":match_json['home_team']['short_name']}
+            for r in match_json["referees"]:
+                match_info[r['trackable_object']] = {"Name":r['last_name'],"Type":self.TYPE_REF,"Team":None,"ID":r['id'],"Position":None,"TeamName":"Referee"}
+            for p in match_json['players']:
+                if home_away_info[p['team_id']]["Type"] == self.TEAM_HOME:
+                    home = True
+                else:
+                    home = False
+                match_info[p['trackable_object']] = {"Name":p['last_name'],"Type":self.TYPE_PLAYER,"TeamID":p['team_id'],"TeamPlayerID":p['team_player_id'],
+                                                    "HomeTeam":home,"TeamName":home_away_info[p['team_id']]["short_name"],"ID":p['id'],"Position":None}
+                match_info[p['trackable_object']]['Position'] = p['player_role']['acronym']
+            match_info[match_json['ball']['trackable_object']] = {"Name":"Ball","Type":self.TYPE_BALL,"TeamName":"Ball","Position":None}
+        outdata = []
+        outcolumns = ["group","team","period","frame","x_coord","y_coord","z_coord","time","point","objectid","trackid","playername","position","type"]
+        
+        with open(path_to_tracks, "r",encoding='utf-8',newline='') as read_file:
+            print("Processing tracks...")
+            tracks_json = json.load(read_file)
+            for t in tracks_json:
+                cg = t['possession']['group']
+                cp = t['period']
+                cf = t['frame']
+                ct = t['time']
+                for d in t['data']:
+                    track_obj = {x:None for x in outcolumns}
+                    track_obj['group'] = cg
+                    track_obj['period'] = cp
+                    track_obj['frame'] = cf
+                    track_obj['time'] = ct
+                    coords = SpatialSoccer.skillcorner_coordinates_to_statsbomb(d['x'],d['y'])
+                    track_obj['x_coord'] = coords[0]
+                    track_obj['y_coord'] = coords[1]
+                    track_obj['point'] = Point(coords)
+                    try:
+                        track_obj['z_coord'] = d['z']
+                    except:
+                        track_obj['z_coord'] = 0
+                    track_obj["trackid"] = d["track_id"]
+                    try:
+                        track_obj['objectid'] = d["trackable_object"]
+                    except:
+                        track_obj['objectid'] = -9999
+                    try:
+                        track_obj['playername'] = match_info[d["trackable_object"]]["Name"]
+                    except:
+                        track_obj['playername'] = ""
+                    try:
+                        track_obj['position'] = match_info[d["trackable_object"]]["Position"]
+                    except:
+                        track_obj['position'] = ""
+                    try:
+                        track_obj['type'] = match_info[d["trackable_object"]]["Type"]
+                    except:
+                        track_obj['type'] = ""
+                    try:
+                        track_obj['team'] = match_info[d["trackable_object"]]["TeamName"]
+                    except:
+                        track_obj['team'] = ""
+                    outdata.append([track_obj[k] for k in outcolumns])
+                    del track_obj
+        df = pd.DataFrame(outdata,columns=outcolumns)
+        gdf = gpd.GeoDataFrame(df,geometry=df["point"])
+        print("Completed!")
+        del df
+        return gdf
+
+    def load_nfl_tracking(self,path_to_tracks,match_obj,normalize_to_same_direction = False):
+        """Loads csv file of tracking data
+        path_to_tracks should be the root folder containing the week*.csv files
+        match_obj can be loaded as above
+        normalize_to_same_direction Not Implemented Yet, meant to be a place holder to take the change in direction of play after each quarter
+        returns geodataframe
+        """
+        
+        outdata = []
+        path_to_tracks = path_to_tracks + '/week' + str(match_obj.week) + '.csv'
+        df = pd.read_csv(path_to_tracks,encoding='utf-8')
+        df = df[df['gameId'] == match_obj.match_id].copy()
+        #players = pd.read_csv(path_to_players,encoding='utf-8')
+        geometry = [Point(x,y) for x,y in df[['x','y']].values]
+
+
+        #for playerid in df['nflid'].values:
+            #position = players[players['nflid']]==playerid]
+        
+        gdf = gpd.GeoDataFrame(df,geometry=geometry)
+        gdf.loc[pd.isnull(gdf['position']),"position"]="Ball"
+        gdf['fulldatetime'] = [parse(tstr) for tstr in gdf['time'].values]
+        mindttime = np.min(gdf['fulldatetime'].values)
+        tds = [fdt-mindttime for fdt in gdf['fulldatetime'].values]
+        gdf['nsec'] = tds
+        gdf['total_seconds'] = gdf['nsec'].dt.total_seconds()
+        del df
+        return gdf
+
     def parse_time_by_period(self,df):
         """Parse the timestamp of events using the base match kick_off time
         df: dataframe that contains the event information
@@ -580,6 +832,18 @@ class SpatialSoccer(object):
     @staticmethod
     def proportion_coordinates_to_statsbomb(prop_x,prop_y, mnx=0,mxx=120,mny=0,mxy=80,flip_y = True):
         """WYSCOUT uses the position as the percentage from the left corner of the attacking team"""
+        x_coord = (mxx - mnx) * (prop_x)
+        y_coord = (mxy - mny) * (prop_y)
+        if flip_y:
+            y_coord = SpatialSoccer.flip_coordinate_min_max(y_coord,mny,mxy)
+        return (x_coord,y_coord)
+
+    @staticmethod
+    def skillcorner_coordinates_to_statsbomb(raw_x,raw_y, mnx=0,mxx=120,mny=0,mxy=80,flip_y = False):
+        """WYSCOUT uses the position as the percentage from the left corner of the attacking team"""
+        prop_x = (raw_x + 52.5)/105.0
+        prop_y = (raw_y + 34) / 68
+        
         x_coord = (mxx - mnx) * (prop_x)
         y_coord = (mxy - mny) * (prop_y)
         if flip_y:
@@ -643,6 +907,7 @@ class SpatialSoccer(object):
         pitchgdf = gpd.GeoDataFrame(df_dict,geometry=geometry)
         return pitchgdf
 
+
     @staticmethod
     def build_polygon_halfpitch_statsbomb():
         """Builds a pitch based on statsbomb's defined. The coordinates are flipped so the origin is in the lower left corner.
@@ -666,6 +931,56 @@ class SpatialSoccer(object):
                Polygon(left_goal_box),Point(center)]
         pitchgdf = gpd.GeoDataFrame(df_dict,geometry=geometry)
         return pitchgdf
+
+    @staticmethod
+    def build_polygon_field_nfl():
+        """Builds a pitch based on nfl's defined."""
+        #polygons
+        outside_line_pairs = [(0,0),(120,0),(120,53.3),(0,53.3),(0,0)]
+        left_end_zone = [(0,0),(10,0),(10,53.3),(0,53.3),(0,0)]
+        right_end_zone = [(110,0),(120,0),(120,53.3),(110,53.3),(110,0)]
+        geometry = [Polygon(outside_line_pairs),Polygon(left_end_zone),
+                Polygon(right_end_zone)]
+        #DataFrame
+        df_dict = {"Description":['Outside Boundary Line','Home Endzone','Visitor Endzone']}
+        for i in range(0,60,10):
+            if i == 0:
+                label = "Goal Line"
+                ln = LineString([(i,0),(i,53.3)])
+                ln1 = LineString([(100,0),(100,53.3)])
+                df_dict['Description'].append(label)
+                df_dict['Description'].append(label)
+                geometry.append(ln)
+                geometry.append(ln1)
+            elif i == 50:
+                label = "50 yard line"
+                ln = LineString([(i+10,0),(i+10,53.3)])
+                df_dict['Description'].append(label)
+                geometry.append(ln)
+            else:
+                label = "{0} yard line".format(i)
+                ln = LineString([(i+10,0),(i+10,53.3)])
+                ln1 = LineString([(100-i+10,0),(100-i+10,53.3)])
+                df_dict['Description'].append(label)
+                df_dict['Description'].append(label)
+                geometry.append(ln)
+                geometry.append(ln1)
+
+        pitchgdf = gpd.GeoDataFrame(df_dict,geometry=geometry)
+        return pitchgdf
+    
+    @staticmethod
+    def build_plot_field_nfl(ax):
+        """Builds a plot for the nfl field."""
+        field = SpatialSoccer.build_polygon_field_nfl()
+        field[field['Description'] == "Outside Boundary Line"].plot(ax=ax,facecolor=SpatialSoccer.GREEN_PITCH_COLOR,edgecolor ="black")
+        field[field['Description'] == "Home Endzone"].plot(ax=ax,facecolor="red",edgecolor ="black",alpha=.6)
+        field[field['Description'] == "Visitor Endzone"].plot(ax=ax,facecolor="blue",edgecolor ="black",alpha=.6)
+        for yard in field['Description'].unique():
+            if 'yard line' in yard:
+                field[field['Description'] == yard].plot(ax=ax,color=SpatialSoccer.WHITE_LINE_COLOR)
+                ls = field[field['Description'] == yard]['geometry'].values[0]
+
 
     @staticmethod
     def build_18zones_statsbomb_dim():
@@ -697,14 +1012,36 @@ class SpatialSoccer(object):
         return zngdf
 
     @staticmethod
+    def angle_to_goal(pt,goallength=20,returnradians=True):
+        """Calculate the angle to the goal from the pt
+        pt: Point (shapely class)
+        goallength: length of the goal, default is the statsbomb dimension
+        returnradians: radians are returned if true, degrees if false
+        returns angle (theta)
+        see: https://github.com/Friends-of-Tracking-Data-FoTD/SoccermaticsForPython/blob/master/3xGModel.py
+        """
+        glh = (goallength/2)
+        a = np.arctan(goallength*pt.x / (pt.x*pt.x + pt.y*pt.y - (glh*glh)))
+        if a <0:
+            a = np.pi + a
+        if returnradians:
+            return a
+        else:
+            return np.degrees(a)
+
+    @staticmethod
     def bearing(pt1,pt2):
         """Returns the direction\angle of a line between two points.
         pt1: Point (shapely class) one.
         pt2: Point (shapely class) two.
         returns angle in degrees.
         """
-        x_diff = pt2[0] - pt1[0]
-        y_diff = pt2[1] - pt1[1]
+        if type(pt1) == Point:
+            x_diff = pt2.x - pt1.x
+            y_diff = pt2.y - pt1.y
+        else:
+            x_diff = pt2[0] - pt1[0]
+            y_diff = pt2[1] - pt1[1]
         return math.degrees(math.atan2(y_diff, x_diff))
 
     @staticmethod
@@ -964,7 +1301,7 @@ class SpatialSoccer(object):
     
     @staticmethod
     def shots_from_trajectories(trajectories,place_index = -1):
-        shot_place = {"trajectory_id":[],"point":[],"scored":[],"period":[],'x_coord':[],'y_coord':[]}
+        shot_place = {"trajectory_id":[],"point":[],"scored":[],"period":[],'x_coord':[],'y_coord':[],'original_json':[]}
         for p_id in list(trajectories['trajectory_id'].unique()):
             traj = trajectories[trajectories['trajectory_id']==p_id].sort_values("temporal_distance").copy()
             try:
@@ -974,6 +1311,7 @@ class SpatialSoccer(object):
                 shot_place["period"].append(traj['period'].mean())
                 shot_place["x_coord"].append(p.x)
                 shot_place["y_coord"].append(p.y)
+                shot_place["original_json"].append(traj['original_json'])
                 if traj[['is_goal']].sum().iloc[0] >0:
                     shot_place["scored"].append(1)
                 else:
@@ -1000,7 +1338,9 @@ class match(object):
         self.match_date = ""
         self.match_date_time = datetime.now()
         self.events = []
-
+        self.home_players = []
+        self.away_players = []
+        self.week = ""
 
     def build_dictionary_from_events(self):
         result = {}
@@ -1076,7 +1416,20 @@ class match(object):
             del traj
         return trajectories
 
-    
+class player(object):
+    def __init__(self):
+        self.player_id = -1
+        self.own_goals = 0
+        self.red_cards = 0
+        self.yellow_cards = 0
+        self.goals = 0
+        self.position = ""
+        self.last_name = ""
+        self.first_name = ""
+        self.full_name = ""
+        self.lineup = 0
+
+
 
 class event(object):
     EVENT_NUMERIC_PROPERTY_LIST = ["start_x","start_y","end_x","end_y","is_goal","period","match_id","xg"]
