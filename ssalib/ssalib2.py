@@ -446,7 +446,7 @@ class SpatialSoccer(object):
         c_i = {"Team":0,"Type":1,"Subtype":2,"Period":3,"Start Frame":4,"Start Time [s]":5,"End Frame":6,
                         "End Time [s]":7,"From":8,"To":9,"Start X":10,"Start Y":11,"End X":12,"End Y":13}
        
-        path_to_events = path_to_events + "\\" + match_obj.match_id + ".csv"
+        path_to_events = path_to_events + "/" + match_obj.match_id + ".csv"
         print(path_to_events)
         with open(path_to_events, "r",encoding='utf-8',newline='') as read_file:
             reader = csv.reader(read_file)
@@ -760,7 +760,7 @@ class SpatialSoccer(object):
         """Loads csv file of tracking data
         path_to_tracks should be the root folder containing the week*.csv files
         match_obj can be loaded as above
-        normalize_to_same_direction Not Implemented Yet, meant to be a place holder to take the change in direction of play after each quarter
+        normalize_to_same_direction Flips coordinates so that all directions head from left to right
         returns geodataframe
         """
         
@@ -782,6 +782,15 @@ class SpatialSoccer(object):
         tds = [fdt-mindttime for fdt in gdf['fulldatetime'].values]
         gdf['nsec'] = tds
         gdf['total_seconds'] = gdf['nsec'].dt.total_seconds()
+        flippedgeom = []
+        if normalize_to_same_direction == True:
+            for idx,row in gdf.iterrows():
+                if row['playDirection']=="left":
+                    flippedgeom.append(Point(SpatialSoccer.flip_coordinate_min_max(row['x'],120,0),SpatialSoccer.flip_coordinate_min_max(row['y'],53.3,0)))
+                else:
+                    flippedgeom.append(row['geometry'])
+            gdf['flipped'] = flippedgeom
+            gdf = gdf.set_geometry('flipped')
         del df
         return gdf
 
