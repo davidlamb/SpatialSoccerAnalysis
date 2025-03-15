@@ -20,7 +20,7 @@
  
  ## Examples using ssalib2
  
- [Updated ssalib2](_RevisedSpatialSoccerLibrary.md)
+ [Updated ssalib2](../projects/_RevisedSpatialSoccerLibrary.md)
 - I hit the limit of my working ssalib python library pretty quickly. I wanted to also work with wyscout data, and the way I set up the original library wasn't well tailored to working across different data sources. Now, I have ssalib2 that abstracts some of the importing to classes for matches and events. I leave ssalib there to work with the older previous projects.
 
  [Alternatives to Visualizing Pass Maps](8_VisualizingPassNetworks.md)
