@@ -23,10 +23,10 @@
  [Updated ssalib2](../projects/_RevisedSpatialSoccerLibrary.md)
 - I hit the limit of my working ssalib python library pretty quickly. I wanted to also work with wyscout data, and the way I set up the original library wasn't well tailored to working across different data sources. Now, I have ssalib2 that abstracts some of the importing to classes for matches and events. I leave ssalib there to work with the older previous projects.
 
- [Alternatives to Visualizing Pass Maps](8_VisualizingPassNetworks.md)
+ [Alternatives to Visualizing Pass Maps](../projects/8_VisualizingPassNetworks.md)
   - In this project I present some alternatives to the flow map style passing network visuals, including sankey diagrams and heat maps.
   
- [Inferring player locations from event data](9_InferringLocationFromEventData.md)
+ [Inferring player locations from event data](../projects/9_InferringLocationFromEventData.md)
   - This project explores using a Potential Path Areas (a common tool from Time Geography) to understand where a player was in the field during an event. In other words, inferring a player's location prior to the event given their speed and a time interval.
 
 
